@@ -1,0 +1,58 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+out/
+
+# Environment variables and local configuration
+.env
+.env.*
+!.env.example
+!.env.sample
+.env.*.local
+*.local
+
+# Secrets and credentials
+*.key
+*.pem
+*.crt
+*.p12
+*.jks
+*.keystore
+*.token
+secrets/
+credentials/
+
+# Java / Spring Boot / Gradle / Maven
+target/
+build/
+.gradle/
+*.class
+*.jar
+*.war
+*.ear
+
+# Node / Vue / React
+node_modules/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python / FastAPI
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Logs
+*.log
+logs/
+
+# OS temporary files
+.DS_Store
+Thumbs.db
