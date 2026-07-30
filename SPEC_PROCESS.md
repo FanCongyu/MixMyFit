@@ -295,3 +295,58 @@ Codex 给出的修改：
 在 `SPEC_PROCESS.md` 和 `PROJECT_BRIEF.md` 更新完成后，应先由用户 review 这两份文件。
 
 确认无误后，下一步才是使用 Superpowers `writing-plans` 技能创建 `PLAN.md`。`PLAN.md` 必须把 `SPEC.md` 拆成细粒度 task，每个 task 包含目标、涉及文件、预期实现要点、失败测试和验证步骤，并显式标出依赖与可并行部分。
+
+## 7. Writing-plans 阶段记录
+
+当前状态：`PLAN.md` 已在 `docs/writing-plan` 阶段生成初版。
+
+使用技能：
+
+- Superpowers `writing-plans`。
+
+输入文档：
+
+- `SPEC.md`
+- `PLAN.md`
+- `SPEC_PROCESS.md`
+- `AGENT_LOG.md`
+- `PROJECT_BRIEF.md`
+- `docs/assignment/通用要求.md`
+- `docs/assignment/AI4SE_Final_Project_B_应用类项目.md`
+
+计划生成原则：
+
+- 在冷启动验证完成前不进入实现阶段。
+- 不编写任何业务代码。
+- 不创建前端、后端、数据库、测试或部署实现文件。
+- `PLAN.md` 只作为后续 subagent-driven development 的任务规约。
+- 每个 task 必须包含目标、依赖、涉及文件路径、预期实现要点、TDD 验证步骤、需要先写的失败测试、完成标准、是否可并行、建议分支或 worktree 名。
+
+人工 review 后的关键修正：
+
+1. 冷启动验证不能作为最后任务。它必须在任何代码实现前完成，因此被改为 `T0: Cold Start Validation Before Implementation`。
+2. 原认证任务粒度过大，拆为：
+   - `T3A: Backend Registration, Login, Logout, HttpOnly Cookie Session`
+   - `T3B: Backend Profile View, Nickname Update, Password Change`
+3. 原衣物后端任务粒度过大，拆为：
+   - `T7A: Backend Clothing Basic CRUD and Ownership Checks`
+   - `T7B: Backend Draft Status, Pagination, Filtering, Color Reuse`
+4. 原衣物前端任务粒度过大，拆为：
+   - `T13A: Frontend Clothing Library List, Filters, Draft Status UI`
+   - `T13B: Frontend Batch Upload Feedback and Batch Operations UI`
+5. CI 任务依赖改为 `T17`，因为核心 E2E 之前完整业务闭环尚未完成。
+6. `REFLECTION.md` 明确不由 AI 编写；最终文档任务只检查它应由学生本人完成。
+
+当前 `PLAN.md` 任务链摘要：
+
+`T0 -> T1 -> T2 -> T3A -> T3B -> T4 -> (T5 || T6) -> T7A -> T7B -> T8 -> T9 -> T10 -> T17 -> (T18 || T19) -> T20 -> T21`
+
+前端任务链摘要：
+
+`T1 -> T11 -> T12 -> T13A -> T13B -> T14 -> T15 -> T16 -> T17`
+
+后续要求：
+
+- 先执行 T0 冷启动验证。
+- T0 通过并记录结果前，禁止启动任何实现 task。
+- 若冷启动验证暴露 `SPEC.md` 或 `PLAN.md` 缺陷，应先修订文档并记录关键 diff，再进入实现阶段。
