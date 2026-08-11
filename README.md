@@ -6,7 +6,7 @@ MixMyFit 是一个个人衣橱搭配管理 Web 应用，面向希望数字化管
 
 用户可以上传自己的衣物图片，按品类、颜色、季节和标签管理衣物，并在搭配编辑器中组合、预览、保存和复用穿搭方案。项目目标是减少用户反复试穿或手工拼图的成本，让用户能基于自己的真实衣物图片完成搭配规划。
 
-本项目是 AI4SE 期末项目 B（非 harness 应用类项目）。当前处于 SPEC 阶段，尚未进入业务实现。
+本项目是 AI4SE 期末项目 B（非 harness 应用类项目）。当前已完成 SPEC、PLAN 与冷启动验证，尚未进入业务实现。
 
 ## 目标用户
 
@@ -54,8 +54,8 @@ SPEC 阶段确定的 MVP 功能包括：
 - [x] 更新 SPEC_PROCESS.md
 - [x] 更新 PROJECT_BRIEF.md
 - [x] 按 SPEC 阶段更新 README.md
-- [ ] 完成 PLAN.md
-- [ ] 完成冷启动验证
+- [x] 完成 PLAN.md
+- [x] 完成冷启动验证
 - [ ] 实现核心功能
 - [ ] 配置测试与 CI
 - [ ] 完成部署与分发
@@ -65,6 +65,7 @@ SPEC 阶段确定的 MVP 功能包括：
 - `SPEC.md`：项目设计文档
 - `PLAN.md`：实现计划
 - `SPEC_PROCESS.md`：规约生成过程记录
+- `docs/cold-start-validation.md`：冷启动验证报告
 - `PROJECT_BRIEF.md`：项目上下文简报，供新的 AI 会话理解当前状态
 - `AGENT_LOG.md`：智能体协作开发日志
 - `REFLECTION.md`：最终反思报告
@@ -83,25 +84,26 @@ SPEC 阶段确定的 MVP 功能包括：
 ├── AGENT_LOG.md
 ├── REFLECTION.md
 ├── docs/
+│   ├── cold-start-validation.md
 │   └── assignment/
 │       ├── 通用要求.md
 │       └── AI4SE_Final_Project_B_应用类项目.md
 └── src/
 ```
 
-实现阶段的前后端目录、测试目录、Docker 和 CI 文件将在 `PLAN.md` 完成后确定并补充。
+实现阶段计划创建 `backend/`、`frontend/`、`e2e/`、`docker-compose.yml` 和 `.gitlab-ci.yml` 等文件。目前这些实现目录和分发文件尚未生成。
 
 ## 安装与运行
 
 当前没有可安装或可运行的应用。
 
-安装与运行命令将在 `PLAN.md` 完成并进入实现阶段后补充。
+计划技术栈为 Spring Boot REST API（Java 17 + Maven）、Vue、MySQL、Flyway、Testcontainers MySQL、Docker Compose 和 GitLab CI。安装与运行命令将在进入实现阶段后补充。
 
 ## 测试
 
-当前尚未编写测试。
+当前尚未进入实现阶段，因此还没有可运行的测试套件。
 
-测试命令、测试范围和 CI 命令将在 `PLAN.md` 和实现阶段补充。
+计划中的测试策略包括后端测试、前端测试、少量 E2E 测试，以及 GitLab CI 中名为 `unit-test` 的 job。具体命令将在实现阶段补充。
 
 ## 分发与部署
 
@@ -125,7 +127,6 @@ MixMyFit MVP 不调用 LLM、agent 或外部 AI API，因此不需要配置 LLM 
 
 ## 已知限制
 
-- 当前仅完成 SPEC 阶段文档，没有可运行应用。
-- `PLAN.md` 尚未生成。
-- 冷启动验证尚未进行。
+- 当前仅完成 SPEC、PLAN 和冷启动验证文档，没有可运行应用。
+- 后端、前端、数据库迁移、Docker 和 CI 文件尚未创建。
 - Docker、CI、部署和线上 URL 尚未完成。

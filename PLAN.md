@@ -6,7 +6,7 @@
 
 **架构：** Vue 负责 WebUI，并通过 REST API 与 Spring Boot 后端通信。Spring Boot 负责认证、授权、业务规则、文件上传安全和 MySQL 持久化。上传图片存储在服务端本地文件系统中，并通过 Docker volume 持久化。
 
-**技术栈：** Spring Boot REST API、Vue 前端、MySQL、本地文件系统上传存储、Docker Compose、GitLab CI。
+**技术栈：** Spring Boot REST API、Java 17、Maven、Vue 前端、MySQL、Flyway、Testcontainers MySQL、本地文件系统上传存储、Docker Compose、GitLab CI。
 
 ## 全局约束
 
@@ -14,9 +14,18 @@
 - 不得加入 AI / LLM / agent 功能。
 - 账号模型为唯一用户名 + 密码 + 可选昵称。
 - 认证采用后端设置登录态 Cookie；前端不得直接管理 token。
-- 登录 Cookie 必须设置 `HttpOnly`；线上 HTTPS 部署时必须设置 `Secure`；`SameSite` 根据部署拓扑决定。
+- 后端根包名固定为 `com.fan.mixmyfit`。
+- 后端使用 Java 17 + Maven。
+- 数据库迁移固定使用 Flyway，迁移文件放在 `backend/src/main/resources/db/migration/`。
+- 后端集成测试使用 Testcontainers MySQL；除非文档显式修订，不得用 H2 替代 MySQL 行为。
+- 登录 Cookie 名称固定为 `MMF_SESSION`，必须设置 `HttpOnly`，默认 7 天过期；线上 HTTPS 部署时必须设置 `Secure`；本地默认 `SameSite=Lax`，跨站部署时在 T20 重新确认。
+- 后端 API 必须遵循 `SPEC.md` 的“后端 API 最小合约”，包括路径、方法、字段名、状态码和统一错误响应格式。
+- 统一错误响应格式为 `{ "code": "ERROR_CODE", "message": "Human readable message" }`。
 - 用户只能访问、修改或删除自己的衣物、品类、标签、搭配方案、搭配明细和上传文件。
 - 衣物只有同时具备图片 + 品类时，才能进入搭配编辑器。
+- 文件上传 multipart 字段名固定为 `file`，单张图片上限 5 MB，仅允许 JPEG、PNG、WebP。
+- 上传根目录通过 `UPLOAD_DIR` 配置，本地默认 `backend/uploads`，测试环境必须覆盖为临时目录。
+- MVP 不生成服务端缩略图；前端必须使用受控图片展示尺寸。
 - 固定搭配主槽位只能是上装、下装、鞋子、帽子。
 - 自定义品类默认作为配饰，不得自动变成固定主槽位。
 - 前端 / UI 开发必须使用 `Open Design` 进行，所有前端 task 必须沿用 T11 确认的设计系统与交互规则。
@@ -28,7 +37,7 @@
 
 主链路：
 
-`T0 -> T1 -> T2 -> T3A -> T3B -> T4 -> (T5 || T6) -> T7A -> T7B -> T8 -> T9 -> T10 -> T17 -> (T18 || T19) -> T20 -> T21`
+`T0 -> T1 -> T2A -> T2B -> T3A -> T3B -> T4 -> (T5 || T6) -> T7A -> T7B -> T8 -> T9 -> T10 -> T17 -> (T18 || T19) -> T20 -> T21`
 
 前端链路：
 
@@ -44,14 +53,14 @@
 ## 文件结构规划
 
 - `backend/`：Spring Boot API 服务。
-- `backend/src/main/java/.../auth/`：注册、登录、退出、当前会话用户处理。
-- `backend/src/main/java/.../user/`：个人资料、昵称修改、密码修改。
-- `backend/src/main/java/.../security/`：Cookie 配置、认证过滤器/拦截器、归属校验辅助。
-- `backend/src/main/java/.../category/`：固定品类与自定义品类 API。
-- `backend/src/main/java/.../tag/`：衣物标签与搭配方案标签。
-- `backend/src/main/java/.../file/`：上传校验、文件存储、图片访问。
-- `backend/src/main/java/.../clothing/`：衣物 CRUD、筛选、批量操作。
-- `backend/src/main/java/.../outfit/`：搭配方案保存、编辑、删除、筛选。
+- `backend/src/main/java/com/fan/mixmyfit/auth/`：注册、登录、退出、当前会话用户处理。
+- `backend/src/main/java/com/fan/mixmyfit/user/`：个人资料、昵称修改、密码修改。
+- `backend/src/main/java/com/fan/mixmyfit/security/`：Cookie 配置、认证过滤器/拦截器、归属校验辅助。
+- `backend/src/main/java/com/fan/mixmyfit/category/`：固定品类与自定义品类 API。
+- `backend/src/main/java/com/fan/mixmyfit/tag/`：衣物标签与搭配方案标签。
+- `backend/src/main/java/com/fan/mixmyfit/file/`：上传校验、文件存储、图片访问。
+- `backend/src/main/java/com/fan/mixmyfit/clothing/`：衣物 CRUD、筛选、批量操作。
+- `backend/src/main/java/com/fan/mixmyfit/outfit/`：搭配方案保存、编辑、删除、筛选。
 - `backend/src/main/resources/db/migration/`：MySQL schema migration。
 - `backend/src/test/`：后端单元测试与集成测试。
 - `frontend/`：Vue WebUI。
@@ -127,8 +136,11 @@
 - 修改：`AGENT_LOG.md`
 
 **预期实现要点：**
+- 后端使用 Java 17、Maven、Spring Boot，根包名固定为 `com.fan.mixmyfit`。
 - 后端骨架支持无业务健康检查测试。
+- 后端 Maven 命令为 `cd backend && mvn test`。
 - 前端骨架支持无业务渲染或构建测试。
+- 前端使用 Vue + Vitest；前端依赖安装与验证命令为 `cd frontend && npm ci && npm run build && npm test -- --run`。
 - `Makefile` 预留稳定命令：`make test`、`make test-backend`、`make test-frontend`。
 - README 必须说明应用仍处于实现阶段，当前只存在骨架命令。
 
@@ -140,8 +152,8 @@
 - 运行 `make test`。
 
 **需要先写的失败测试：**
-- 后端：`backend/src/test/...` 下的 health/context smoke test。
-- 前端：`frontend/src/...` 下的默认应用渲染或构建测试。
+- 后端：`backend/src/test/java/com/fan/mixmyfit/HealthSmokeTest.java`，断言 Spring context 能启动且 health endpoint 可用。
+- 前端：`frontend/src/App.test.ts`，使用 Vitest + Vue Test Utils 断言默认应用壳能渲染，例如 `expect(screen.getByText("MixMyFit")).toBeTruthy()`。
 
 **完成标准：**
 - `make test` 能运行后端和前端检查。
@@ -152,18 +164,19 @@
 
 **建议分支 / worktree：** `task/01-project-skeleton`
 
-### T2：后端领域模型与数据库迁移
+### T2A：后端数据库迁移 SQL 与 Flyway 验证
 
-**目标：** 实现 SPEC 中所有实体与约束对应的数据库 schema 和后端领域映射。
+**目标：** 使用 Flyway 实现 SPEC 中所有实体与约束对应的 MySQL schema，并用 Testcontainers MySQL 验证迁移可自动执行。
 
 **依赖关系：** T1。
 
 **涉及文件：**
 - 创建：`backend/src/main/resources/db/migration/`
-- 创建：`backend/src/main/java/.../domain/`
-- 测试：`backend/src/test/.../domain/`
+- 测试：`backend/src/test/java/com/fan/mixmyfit/domain/SchemaMigrationTest.java`
 
 **预期实现要点：**
+- 使用 Flyway，首个迁移文件命名为 `V1__initial_schema.sql`。
+- 测试环境使用 Testcontainers MySQL，并在 Spring Boot 测试启动时自动执行 Flyway migration。
 - 表包括：`users`、`categories`、`clothes`、`clothing_seasons`、`clothing_tags`、`clothing_tag_links`、`outfit_tags`、`outfits`、`outfit_seasons`、`outfit_tag_links`、`outfit_items`。
 - 使用可区分 ID 字段名，例如 `user_id`、`clothing_id`、`outfit_id`。
 - 约束 username 全局唯一。
@@ -174,8 +187,8 @@
 **TDD 验证步骤：**
 - 先写 migration/schema 测试。
 - 确认缺表时测试失败。
-- 添加迁移和映射。
-- 使用测试数据库确认测试通过。
+- 添加 Flyway 迁移 SQL。
+- 使用 Testcontainers MySQL 确认测试通过。
 
 **需要先写的失败测试：**
 - schema 测试断言所有必需表、字段和唯一约束存在。
@@ -186,29 +199,71 @@
 - 数据库迁移可干净执行。
 - schema 测试通过。
 - 本 task 不实现 REST 业务行为。
+- 本 task 不创建 JPA Entity 或 Repository；这些属于 T2B。
 
 **是否可并行：** 否。
 
-**建议分支 / worktree：** `task/02-backend-schema`
+**建议分支 / worktree：** `task/02a-backend-migration`
+
+### T2B：后端领域对象、ORM 映射与 Repository 验证
+
+**目标：** 在 T2A 的 schema 基础上实现领域对象、JPA/ORM 映射和 Repository 测试，确保 Java 模型与数据库约束一致。
+
+**依赖关系：** T2A。
+
+**涉及文件：**
+- 创建：`backend/src/main/java/com/fan/mixmyfit/domain/`
+- 创建：`backend/src/main/java/com/fan/mixmyfit/*/repository/`
+- 测试：`backend/src/test/java/com/fan/mixmyfit/domain/`
+
+**预期实现要点：**
+- 为 `users`、`categories`、`clothes`、`clothing_seasons`、`clothing_tags`、`clothing_tag_links`、`outfit_tags`、`outfits`、`outfit_seasons`、`outfit_tag_links`、`outfit_items` 建立映射。
+- Java 字段命名与 API 响应区分：数据库字段保留 `user_id`，Java/JSON 可使用 `userId`。
+- Repository 测试必须运行在 Testcontainers MySQL 上，不使用 H2。
+- 不实现 REST endpoint。
+
+**TDD 验证步骤：**
+- 先写 Repository 映射测试。
+- 确认缺少 Entity/Repository 时测试失败。
+- 添加最小 Entity、Repository 和映射配置。
+- 运行后端测试确认映射测试通过。
+
+**需要先写的失败测试：**
+- 可以保存并读取用户、固定品类、用户自定义品类和衣物草稿。
+- `category_id = null` 的衣物可保存为 draft。
+- 同一用户下重复衣物标签名称被数据库或 Repository 层拒绝。
+- `outfit_items` 引用不存在的 clothing 时被拒绝。
+
+**完成标准：**
+- Repository 映射测试通过。
+- T2A 的迁移测试继续通过。
+- 本 task 不实现 REST 业务行为。
+
+**是否可并行：** 否。
+
+**建议分支 / worktree：** `task/02b-backend-domain-mapping`
 
 ### T3A：后端注册、登录、退出与 HttpOnly Cookie 会话
 
 **目标：** 实现注册、登录、退出、密码哈希和后端管理的 HttpOnly Cookie 会话。
 
-**依赖关系：** T2。
+**依赖关系：** T2B。
 
 **涉及文件：**
-- 创建：`backend/src/main/java/.../auth/`
-- 创建/修改：`backend/src/main/java/.../security/`
-- 测试：`backend/src/test/.../auth/`
+- 创建：`backend/src/main/java/com/fan/mixmyfit/auth/`
+- 创建/修改：`backend/src/main/java/com/fan/mixmyfit/security/`
+- 测试：`backend/src/test/java/com/fan/mixmyfit/auth/`
 
 **预期实现要点：**
+- 必须实现 `SPEC.md` 中认证 API 合约：`POST /api/auth/register`、`POST /api/auth/login`、`POST /api/auth/logout`。
+- 注册成功返回 `201` 和 `userId`；登录成功返回 `200` 和 `Set-Cookie`；登出成功返回 `204`。
 - 注册字段包括用户名、密码、确认密码、可选昵称。
 - 只保存密码哈希，不保存明文。
 - 拒绝重复用户名。
 - 用户名或密码错误时，登录失败信息不泄露用户名是否存在。
-- 登录成功设置带明确过期时间的 HttpOnly Cookie。
-- 退出时清除 Cookie。
+- 登录成功设置名为 `MMF_SESSION`、默认 7 天过期、带 `HttpOnly` 的 Cookie。
+- 本地默认 `SameSite=Lax`；线上 HTTPS 时必须设置 `Secure`。
+- 退出时通过同名 `MMF_SESSION` Cookie 的 `Max-Age=0` 或等效过期时间清除 Cookie。
 - 前端可见 API 不返回 password hash。
 
 **TDD 验证步骤：**
@@ -218,10 +273,10 @@
 - 确认测试通过。
 
 **需要先写的失败测试：**
-- 注册创建 `user_id`，且密码以哈希而非明文保存。
+- `POST /api/auth/register` 返回 `201` 和 `userId`，且密码以哈希而非明文保存。
 - 重复用户名返回安全错误。
-- 登录成功响应包含带 `HttpOnly` 的 `Set-Cookie`。
-- 退出清除登录 Cookie。
+- `POST /api/auth/login` 返回 `200`，响应包含名为 `MMF_SESSION` 且带 `HttpOnly` 的 `Set-Cookie`。
+- `POST /api/auth/logout` 返回 `204` 并清除 `MMF_SESSION`。
 
 **完成标准：**
 - 认证测试通过。
@@ -239,9 +294,9 @@
 **依赖关系：** T3A。
 
 **涉及文件：**
-- 创建：`backend/src/main/java/.../user/`
-- 修改：`backend/src/main/java/.../auth/`
-- 测试：`backend/src/test/.../user/`
+- 创建：`backend/src/main/java/com/fan/mixmyfit/user/`
+- 修改：`backend/src/main/java/com/fan/mixmyfit/auth/`
+- 测试：`backend/src/test/java/com/fan/mixmyfit/user/`
 
 **预期实现要点：**
 - 已登录用户可以查看用户名和昵称。
@@ -277,9 +332,9 @@
 **依赖关系：** T3A。
 
 **涉及文件：**
-- 修改：`backend/src/main/java/.../security/`
-- 创建：`backend/src/test/.../support/`
-- 测试：`backend/src/test/.../security/`
+- 修改：`backend/src/main/java/com/fan/mixmyfit/security/`
+- 创建：`backend/src/test/java/com/fan/mixmyfit/support/`
+- 测试：`backend/src/test/java/com/fan/mixmyfit/security/`
 
 **预期实现要点：**
 - 为 controller/service 提供一致的当前 `user_id` 获取方式。
@@ -312,10 +367,10 @@
 **依赖关系：** T4。
 
 **涉及文件：**
-- 创建：`backend/src/main/java/.../category/`
-- 创建：`backend/src/main/java/.../tag/`
-- 测试：`backend/src/test/.../category/`
-- 测试：`backend/src/test/.../tag/`
+- 创建：`backend/src/main/java/com/fan/mixmyfit/category/`
+- 创建：`backend/src/main/java/com/fan/mixmyfit/tag/`
+- 测试：`backend/src/test/java/com/fan/mixmyfit/category/`
+- 测试：`backend/src/test/java/com/fan/mixmyfit/tag/`
 
 **预期实现要点：**
 - 初始化或暴露固定品类：上装、下装、鞋子、帽子。
@@ -351,17 +406,20 @@
 **依赖关系：** T4。
 
 **涉及文件：**
-- 创建：`backend/src/main/java/.../file/`
-- 修改：`backend/src/main/java/.../clothing/`
-- 测试：`backend/src/test/.../file/`
+- 创建：`backend/src/main/java/com/fan/mixmyfit/file/`
+- 修改：`backend/src/main/java/com/fan/mixmyfit/clothing/`
+- 测试：`backend/src/test/java/com/fan/mixmyfit/file/`
 
 **预期实现要点：**
+- 衣物上传 endpoint 使用 `POST /api/clothes`。
+- multipart 文件字段名固定为 `file`。
+- 上传成功返回 `201`，响应至少包含 `clothingId`、`status`、`imageUrl`、`originalFilename`、`contentType`、`fileSize`。
 - MVP 文件大小上限确定为每张图片 5 MB。
 - 只允许 JPEG、PNG、WebP MIME 类型。
 - 服务端生成文件名，不信任原始文件名。
-- 文件存储在配置的上传根目录下。
+- 文件存储在 `UPLOAD_DIR` 配置的上传根目录下，本地默认 `backend/uploads`，测试环境覆盖为临时目录。
 - 保存原始文件名、content type、大小和存储路径元数据。
-- 图片访问 endpoint 在返回文件前必须校验归属。
+- 图片访问 endpoint 使用 `GET /api/clothes/{clothingId}/image`，在返回文件前必须校验归属。
 
 **TDD 验证步骤：**
 - 先写上传校验测试。
@@ -370,6 +428,7 @@
 - 确认测试通过。
 
 **需要先写的失败测试：**
+- `POST /api/clothes` 使用字段名 `file` 上传图片时返回 `201` 和 `clothingId`。
 - 上传非图片 MIME 类型被拒绝。
 - 上传大于 5 MB 的文件被拒绝。
 - 存储文件名不同于原始文件名。
@@ -390,10 +449,11 @@
 **依赖关系：** T5、T6。
 
 **涉及文件：**
-- 创建/修改：`backend/src/main/java/.../clothing/`
-- 测试：`backend/src/test/.../clothing/`
+- 创建/修改：`backend/src/main/java/com/fan/mixmyfit/clothing/`
+- 测试：`backend/src/test/java/com/fan/mixmyfit/clothing/`
 
 **预期实现要点：**
+- 必须遵循 `SPEC.md` 衣物 API 合约：`GET /api/clothes/{clothingId}`、`GET /api/clothes`、`PATCH /api/clothes/{clothingId}`、`DELETE /api/clothes/{clothingId}`。
 - 上传创建的衣物记录归属于当前用户。
 - 支持编辑名称、品类、颜色、季节和衣物标签。
 - 支持删除自己的衣物。
@@ -427,8 +487,8 @@
 **依赖关系：** T7A。
 
 **涉及文件：**
-- 修改：`backend/src/main/java/.../clothing/`
-- 测试：`backend/src/test/.../clothing/`
+- 修改：`backend/src/main/java/com/fan/mixmyfit/clothing/`
+- 测试：`backend/src/test/java/com/fan/mixmyfit/clothing/`
 
 **预期实现要点：**
 - `category_id = null` 表示 draft / 待完善。
@@ -465,8 +525,8 @@
 **依赖关系：** T7B。
 
 **涉及文件：**
-- 修改：`backend/src/main/java/.../clothing/`
-- 测试：`backend/src/test/.../clothing/`
+- 修改：`backend/src/main/java/com/fan/mixmyfit/clothing/`
+- 测试：`backend/src/test/java/com/fan/mixmyfit/clothing/`
 
 **预期实现要点：**
 - 批量设置品类。
@@ -503,10 +563,13 @@
 **依赖关系：** T7B。
 
 **涉及文件：**
-- 创建：`backend/src/main/java/.../outfit/`
-- 测试：`backend/src/test/.../outfit/`
+- 创建：`backend/src/main/java/com/fan/mixmyfit/outfit/`
+- 测试：`backend/src/test/java/com/fan/mixmyfit/outfit/`
 
 **预期实现要点：**
+- 必须遵循 `SPEC.md` 搭配创建 API 合约：`POST /api/outfits`。
+- 创建成功返回 `201` 和 `outfitId`。
+- 空 payload 或 `items` 为空时返回 `400` 和统一错误响应。
 - 保存上装、下装、鞋子、帽子主槽位，且四个槽位都可为空。
 - 保存 0 到多个配饰层 item。
 - 至少包含一件已选择衣物或配饰才能保存。
@@ -522,8 +585,9 @@
 - 确认测试通过。
 
 **需要先写的失败测试：**
-- 完全空搭配保存被拒绝。
+- `POST /api/outfits` 完全空搭配保存返回 `400`。
 - 只选择部分主槽位的搭配可以保存。
+- 有效 payload 返回 `201` 和 `outfitId`。
 - 空标题生成默认标题。
 - draft 衣物不能被保存进搭配方案。
 - 用户 A 不能用用户 B 的衣物保存搭配方案。
@@ -543,10 +607,11 @@
 **依赖关系：** T9。
 
 **涉及文件：**
-- 修改：`backend/src/main/java/.../outfit/`
-- 测试：`backend/src/test/.../outfit/`
+- 修改：`backend/src/main/java/com/fan/mixmyfit/outfit/`
+- 测试：`backend/src/test/java/com/fan/mixmyfit/outfit/`
 
 **预期实现要点：**
+- 必须遵循 `SPEC.md` 搭配管理 API 合约：`GET /api/outfits/{outfitId}`、`GET /api/outfits`、`PATCH /api/outfits/{outfitId}`、`DELETE /api/outfits/{outfitId}`。
 - 查看搭配方案详情，包括 items、季节和搭配标签。
 - 编辑搭配内容和元数据。
 - 删除自己的搭配方案。

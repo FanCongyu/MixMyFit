@@ -251,20 +251,51 @@ Codex 给出的修改：
 
 ## 4. 冷启动验证记录
 
-当前状态：未进行。
+当前状态：已完成第一轮冷启动验证。
 
-原因：
+验证时间：
 
-- 冷启动验证需要仅提供 `SPEC.md` + `PLAN.md` 给第二个、不同类型的智能体。
-- 当前还没有进入 `PLAN.md` 阶段，因此无法进行符合要求的冷启动验证。
+- 2026-08-11T15:51:26.637+08:00。
 
-后续要求：
+验证输入：
 
-- 完成并确认 `PLAN.md` 后，启动一个与主开发智能体不同的新智能体。
-- 不提供本会话历史、`SPEC_PROCESS.md` 或口头解释。
-- 只提供 `SPEC.md` 和 `PLAN.md`。
-- 要求它选择 1 到 2 个 task 自主尝试，并明确遇到不确定之处应暂停提问，而不是猜测继续。
-- 将它的疑问、误解、暴露出的 SPEC/PLAN 缺陷、修订前后 diff 摘要补充回本文件。
+- 仅提供 `SPEC.md` 和 `PLAN.md`。
+- 未提供本会话历史、`PROJECT_BRIEF.md`、`SPEC_PROCESS.md`、`AGENT_LOG.md` 或任何口头说明。
+
+验证智能体选择的任务：
+
+- T1：项目骨架与测试基线。
+- T2：后端领域模型与数据库迁移。
+
+验证产物：
+
+- 详细报告已写入 `docs/cold-start-validation.md`。
+- 冷启动智能体为红灯阶段创建了以下失败测试草案：
+  - `backend/src/test/java/com/fan/mixmyfit/auth/AuthApiTest.java`
+  - `backend/src/test/java/com/fan/mixmyfit/clothing/ClothingApiTest.java`
+  - `backend/src/test/java/com/fan/mixmyfit/outfit/OutfitApiTest.java`
+
+验证结论：
+
+- 仅凭原始 `SPEC.md` + `PLAN.md` 不足以让陌生 agent 稳定执行早期任务。
+- 项目目标、MVP 边界、主要实体、TDD 要求和用户隔离原则是清楚的。
+- 阻塞点集中在可测试工程契约：API 路径与方法、请求/响应字段、HTTP 状态码、统一错误响应、Cookie 名称与属性、multipart 字段名、上传目录配置、迁移工具、测试数据库策略、Java 包名与构建命令。
+
+已根据报告写回的关键修订：
+
+- `SPEC.md` 增加“后端 API 最小合约”，明确认证、衣物、搭配 API 的路径、方法、字段、状态码和统一错误响应格式。
+- `SPEC.md` 明确 Cookie 名称为 `MMF_SESSION`，默认 7 天过期，本地默认 `SameSite=Lax`，线上 HTTPS 设置 `Secure`。
+- `SPEC.md` 明确上传字段名为 `file`，单张图片上限为 5 MB，允许 MIME 类型为 JPEG/PNG/WebP，上传目录使用 `UPLOAD_DIR` 配置。
+- `SPEC.md` 明确使用 Flyway 迁移与 Testcontainers MySQL 测试数据库，并决定 MVP 不生成服务端缩略图。
+- `PLAN.md` 明确后端根包名 `com.fan.mixmyfit`、Java 17、Maven、前端 Vue + Vitest 验证命令。
+- `PLAN.md` 将原 T2 拆为 `T2A`（Flyway 迁移 SQL + Testcontainers migration 测试）和 `T2B`（领域对象/ORM/Repository 映射测试）。
+- `PLAN.md` 在 T3A、T6、T7A、T9、T10 中补充关键 API 合约约束，降低后续实现猜测。
+
+后续门禁：
+
+- 进入实现阶段前，必须以修订后的 `SPEC.md` 和 `PLAN.md` 为准。
+- 若再次启动实现 agent，应只提供修订后的 `SPEC.md`、`PLAN.md` 和必要的仓库文件，不依赖历史对话口头解释。
+- 如果后续实现中发现 API 合约仍不足，必须先修订 `SPEC.md` / `PLAN.md`，再继续实现。
 
 ## 5. 对 brainstorming 技能的阶段性反思
 
@@ -339,7 +370,7 @@ Codex 给出的修改：
 
 当前 `PLAN.md` 任务链摘要：
 
-`T0 -> T1 -> T2 -> T3A -> T3B -> T4 -> (T5 || T6) -> T7A -> T7B -> T8 -> T9 -> T10 -> T17 -> (T18 || T19) -> T20 -> T21`
+`T0 -> T1 -> T2A -> T2B -> T3A -> T3B -> T4 -> (T5 || T6) -> T7A -> T7B -> T8 -> T9 -> T10 -> T17 -> (T18 || T19) -> T20 -> T21`
 
 前端任务链摘要：
 
@@ -347,6 +378,7 @@ Codex 给出的修改：
 
 后续要求：
 
-- 先执行 T0 冷启动验证。
-- T0 通过并记录结果前，禁止启动任何实现 task。
-- 若冷启动验证暴露 `SPEC.md` 或 `PLAN.md` 缺陷，应先修订文档并记录关键 diff，再进入实现阶段。
+- T0 冷启动验证第一轮已完成并暴露关键缺口。
+- 已根据报告修订 `SPEC.md` 与 `PLAN.md`。
+- 进入实现阶段前，应以修订后的 `SPEC.md` / `PLAN.md` 为准，并由用户确认是否可以启动 T1。
+- 若后续再次验证或实现暴露新的 `SPEC.md` / `PLAN.md` 缺陷，应先修订文档并记录关键 diff，再继续实现阶段。
