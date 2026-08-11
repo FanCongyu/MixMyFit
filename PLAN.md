@@ -132,7 +132,7 @@
 - 前端 `npm ci`、`npm run build`、`npm test -- --run` 验证通过。
 - 当前 shell 中 `make` 不在 PATH，因此 `make test` 入口已创建但未能在本机直接执行。
 - 本 task 未实现业务 endpoint、业务 UI flow、数据库迁移、Docker 或 CI。
-- Commit hash：未记录；当前 shell 未提供 `git` 命令。
+- Commit hash：`8bd770dcbd595d3befd578b346c7cda1f1b16b8f`。
 
 **目标：** 创建后端、前端、测试入口和共享配置的最小可运行项目骨架，不包含业务行为。
 
