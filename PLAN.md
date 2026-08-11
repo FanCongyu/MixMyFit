@@ -188,7 +188,7 @@
 - RED：`MigrationScriptTest` 因 `V1__initial_schema.sql` 缺失失败；初次 `SchemaMigrationTest` 在 Docker 未启动或旧 Testcontainers 无法识别 Docker 环境时失败；Docker 可用后暴露 Flyway 未执行导致缺表失败。
 - GREEN：`SchemaMigrationTest` 通过，`Tests run: 7, Failures: 0, Errors: 0, Skipped: 0`；完整后端 `mvn test` 通过，`Tests run: 9, Failures: 0, Errors: 0, Skipped: 0`。
 - 本 task 未实现 REST 业务行为，未创建 JPA Entity 或 Repository，未写入真实凭据。
-- Commit hash：待提交后记录。
+- Commit hash：`75334beb4f6725e3824ce9105da911833e3dd593`。
 
 **目标：** 使用 Flyway 实现 SPEC 中所有实体与约束对应的 MySQL schema，并用 Testcontainers MySQL 验证迁移可自动执行。
 
