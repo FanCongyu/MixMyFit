@@ -177,6 +177,19 @@
 
 ### T2A：后端数据库迁移 SQL 与 Flyway 验证
 
+**状态：** [x] 已完成，2026-08-11。
+
+**完成记录：**
+- 已添加 Flyway 初始迁移 `backend/src/main/resources/db/migration/V1__initial_schema.sql`。
+- 已创建 `users`、`categories`、`clothes`、`clothing_seasons`、`clothing_tags`、`clothing_tag_links`、`outfit_tags`、`outfits`、`outfit_seasons`、`outfit_tag_links`、`outfit_items`。
+- 已用 MySQL check constraint、foreign key 和 unique constraint 覆盖用户名唯一、用户内品类/标签唯一、固定/自定义品类归属、枚举值、衣物 draft/ready 与品类关系、outfit item 与 clothing 同用户归属等规则。
+- 已添加 Testcontainers MySQL schema 测试，并在测试启动时显式执行 Flyway migration。
+- 已将 Testcontainers 升级到 `2.0.5`，以兼容当前 Docker Desktop / Docker API 环境。
+- RED：`MigrationScriptTest` 因 `V1__initial_schema.sql` 缺失失败；初次 `SchemaMigrationTest` 在 Docker 未启动或旧 Testcontainers 无法识别 Docker 环境时失败；Docker 可用后暴露 Flyway 未执行导致缺表失败。
+- GREEN：`SchemaMigrationTest` 通过，`Tests run: 7, Failures: 0, Errors: 0, Skipped: 0`；完整后端 `mvn test` 通过，`Tests run: 9, Failures: 0, Errors: 0, Skipped: 0`。
+- 本 task 未实现 REST 业务行为，未创建 JPA Entity 或 Repository，未写入真实凭据。
+- Commit hash：待提交后记录。
+
 **目标：** 使用 Flyway 实现 SPEC 中所有实体与约束对应的 MySQL schema，并用 Testcontainers MySQL 验证迁移可自动执行。
 
 **依赖关系：** T1。
