@@ -64,7 +64,57 @@ MVP 必做模块：
 5. 文件与安全模块：上传文件校验、本地文件存储、文件访问权限控制。
 6. 分发与运维模块：Docker Compose、本地 volume、GitLab CI、部署说明。
 
-### 2.2 用户故事
+### 2.2 后端 API 最小合约
+
+后端 REST API 必须在实现阶段至少提供以下合约。字段名、HTTP 方法、状态码和错误格式应作为前后端与自动化测试的共同基线，除非后续文档显式修订。
+
+统一约定：
+
+- 所有 JSON 请求和响应使用 `application/json`。
+- 创建资源成功返回 `201 Created`。
+- 登录成功返回 `200 OK`。
+- 登出成功返回 `204 No Content`。
+- 未登录访问需要认证的接口返回 `401 Unauthorized`。
+- 请求字段校验失败、空搭配保存、非法文件类型或文件过大返回 `400 Bad Request`。
+- 访问其他用户资源时返回 `403 Forbidden` 或 `404 Not Found`，不得泄露资源是否存在。
+- 错误响应统一为 `{ "code": "ERROR_CODE", "message": "Human readable message" }`。
+
+认证 API：
+
+| 方法 | 路径 | 请求 | 成功响应 |
+|---|---|---|---|
+| POST | `/api/auth/register` | `{ "username": string, "password": string, "confirmPassword": string, "nickname"?: string }` | `201`, `{ "userId": number, "username": string, "nickname"?: string }` |
+| POST | `/api/auth/login` | `{ "username": string, "password": string }` | `200`, `{ "userId": number, "username": string, "nickname"?: string }`，并设置登录 Cookie |
+| POST | `/api/auth/logout` | 无请求体 | `204`，并清除登录 Cookie |
+| GET | `/api/profile` | 无请求体 | `200`, `{ "userId": number, "username": string, "nickname"?: string }` |
+| PATCH | `/api/profile` | `{ "nickname": string }` | `200`, `{ "userId": number, "username": string, "nickname"?: string }` |
+| POST | `/api/profile/password` | `{ "oldPassword": string, "newPassword": string }` | `204` |
+
+衣物与文件 API：
+
+| 方法 | 路径 | 请求 | 成功响应 |
+|---|---|---|---|
+| POST | `/api/clothes` | `multipart/form-data`，文件字段名固定为 `file`，可选字段包括 `categoryId`、`name`、`color`、`seasons`、`tagIds` | `201`, `{ "clothingId": number, "status": "draft or ready", "imageUrl": string, "originalFilename": string, "contentType": string, "fileSize": number }` |
+| GET | `/api/clothes/{clothingId}` | 无请求体 | `200`, 衣物详情 |
+| GET | `/api/clothes` | query：`page`、`size`、`categoryId`、`status`、`color`、`season`、`tagIds` | `200`, `{ "items": Clothing[], "page": number, "size": number, "total": number }` |
+| PATCH | `/api/clothes/{clothingId}` | `{ "categoryId"?: number, "name"?: string, "color"?: string, "seasons"?: string[], "tagIds"?: number[] }` | `200`, 衣物详情 |
+| DELETE | `/api/clothes/{clothingId}` | 无请求体 | `204` |
+| POST | `/api/clothes/batch` | `{ "clothingIds": number[], "categoryId"?: number, "color"?: string, "seasons"?: string[], "addTagIds"?: number[], "removeTagIds"?: number[] }` | `200`, `{ "updated": number }` |
+| GET | `/api/clothes/{clothingId}/image` | 无请求体 | `200`, 图片二进制，必须校验归属 |
+
+搭配 API：
+
+| 方法 | 路径 | 请求 | 成功响应 |
+|---|---|---|---|
+| POST | `/api/outfits` | `{ "title"?: string, "note"?: string, "seasons"?: string[], "tagIds"?: number[], "items": OutfitItem[] }` | `201`, `{ "outfitId": number, "title": string }` |
+| GET | `/api/outfits/{outfitId}` | 无请求体 | `200`, 搭配详情 |
+| GET | `/api/outfits` | query：`page`、`size`、`season`、`tagIds` | `200`, `{ "items": OutfitSummary[], "page": number, "size": number, "total": number }` |
+| PATCH | `/api/outfits/{outfitId}` | 可更新标题、备注、季节、标签和 items | `200`, 搭配详情 |
+| DELETE | `/api/outfits/{outfitId}` | 无请求体 | `204` |
+
+列表接口默认 `page = 0`、`size = 20`，默认按 `created_at desc` 排序。
+
+### 2.3 用户故事
 
 US-1：作为新用户，我希望能用唯一用户名和密码注册账号，这样我的衣物和搭配方案不会和其他用户混在一起。
 
@@ -342,11 +392,13 @@ MVP 采用唯一用户名 + 密码 + 可选昵称的账号体系。
 
 要求：
 
+- Cookie 名称固定为 `MMF_SESSION`。
 - Cookie 必须设置 HttpOnly。
 - 线上 HTTPS 部署时 Cookie 必须设置 Secure。
-- SameSite 根据前后端部署域名关系配置。
+- 本地同源开发和 Docker Compose 默认使用 `SameSite=Lax`；若线上前后端跨站部署，必须在部署阶段重新确认 `SameSite=None; Secure` 是否必要。
+- Cookie 过期时间默认为 7 天。若后续需要“记住我”，另做扩展，不进入 MVP。
 - 登出时由后端清除 Cookie。
-- Cookie 过期时间必须明确。
+- 登出响应必须通过同名 `MMF_SESSION` Cookie 设置 `Max-Age=0` 或等效过期时间完成清除。
 - 需要登录的接口必须校验当前用户。
 
 ### 5.3 权限隔离
@@ -386,6 +438,9 @@ MixMyFit MVP 不调用 LLM、agent 或外部 AI API，因此不需要用户配�
 后端：
 
 - Spring Boot。
+- Java 17。
+- Maven。
+- 后端根包名固定为 `com.fan.mixmyfit`。
 - 提供 REST API。
 - 负责认证、权限、业务规则、文件上传、数据访问。
 
@@ -399,6 +454,7 @@ MixMyFit MVP 不调用 LLM、agent 或外部 AI API，因此不需要用户配�
 数据库：
 
 - MySQL。
+- 数据库迁移工具固定使用 Flyway，迁移文件放在 `backend/src/main/resources/db/migration/`。
 - 存储用户、品类、衣物元数据、标签、搭配方案和搭配明细。
 
 文件存储：
@@ -406,6 +462,10 @@ MixMyFit MVP 不调用 LLM、agent 或外部 AI API，因此不需要用户配�
 - 服务端本地文件系统。
 - 数据库只保存文件路径、原始文件名、内容类型、大小等元数据。
 - Docker 运行时用 volume 持久化上传目录。
+- 上传根目录通过环境变量 `UPLOAD_DIR` 配置；本地开发默认值为 `backend/uploads`，测试环境必须可覆盖为临时目录。
+- 单张图片大小上限固定为 5 MB。
+- 仅允许 `image/jpeg`、`image/png`、`image/webp`。
+- MVP 不生成服务端缩略图；前端必须使用受控展示尺寸，避免直接用原始尺寸撑开布局。
 
 分发：
 
@@ -546,6 +606,7 @@ outfit_items：
 
 - 普通列表查询应支持分页或懒加载，避免一次加载大量衣物图片元数据。
 - 衣物图片展示应使用缩略图或受控尺寸，避免前端一次加载原始大图造成卡顿。
+- MVP 不生成服务端缩略图，因此前端必须通过固定容器、`object-fit` 和懒加载控制图片展示尺寸。
 - 批量上传应给出明确进度或结果反馈。
 - 常见操作如登录、衣物列表加载、搭配方案列表加载，在普通课程演示数据规模下应保持可交互。
 
@@ -657,6 +718,8 @@ outfit_items：
 - 品类、颜色、季节和标签批量操作。
 - 文件上传校验。
 - 搭配保存、编辑、删除、筛选。
+- 数据库迁移与 Repository 映射使用 Testcontainers MySQL，不使用 H2 替代 MySQL 行为。
+- Spring Boot 测试启动时应自动执行 Flyway 迁移。
 
 前端测试：
 
@@ -678,6 +741,7 @@ CI：
 
 - `.gitlab-ci.yml` 必须包含名为 `unit-test` 的 job。
 - `unit-test` job 至少运行后端核心测试。
+- CI 需要支持 Docker 服务以运行 Testcontainers MySQL；若课程 CI 环境无法提供 Docker，必须在 README 记录限制并提供本地验证命令。
 - CI 应能构建或校验前端。
 - 若时间允许，CI 增加 Docker 镜像构建检查。
 
@@ -766,7 +830,5 @@ CI：
 ### 9.2 未决问题
 
 - 线上部署最终选择 Render、Railway、Fly.io 还是其他平台，需要在部署阶段再次确认。
-- 文件大小上限需要在实现计划中确定一个具体值。
-- 图片缩略图生成是否进入 MVP 需要在实现计划中结合工期确认；若不生成缩略图，前端必须限制展示尺寸。
-- SameSite 的具体取值需要根据线上前后端是否同域部署决定。
+- 线上前后端若跨站部署，`SameSite=None; Secure` 是否必要需要在部署阶段结合实际域名确认。
 - 前端 Open Design 的具体设计系统与 skill 需要在进入 UI 实现计划前确认并记录。
