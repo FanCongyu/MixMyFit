@@ -123,6 +123,17 @@
 
 ### T1：仓库基线与项目骨架
 
+**状态：** [x] 已完成，2026-08-11。
+
+**完成记录：**
+- 已创建最小 Spring Boot 后端骨架、Vue + Vitest 前端骨架和顶层 `Makefile`。
+- 已按 TDD 先写 `HealthSmokeTest` 与 `App.test.ts` 并确认红灯，再补充最小实现。
+- 后端 smoke test 使用 JetBrains 自带 Maven 可执行文件验证通过；当前 shell 中 `mvn` 不在 PATH。
+- 前端 `npm ci`、`npm run build`、`npm test -- --run` 验证通过。
+- 当前 shell 中 `make` 不在 PATH，因此 `make test` 入口已创建但未能在本机直接执行。
+- 本 task 未实现业务 endpoint、业务 UI flow、数据库迁移、Docker 或 CI。
+- Commit hash：未记录；当前 shell 未提供 `git` 命令。
+
 **目标：** 创建后端、前端、测试入口和共享配置的最小可运行项目骨架，不包含业务行为。
 
 **依赖关系：** T0。

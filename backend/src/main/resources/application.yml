@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: mixmyfit
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
