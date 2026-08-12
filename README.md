@@ -6,7 +6,7 @@ MixMyFit 是一个个人衣橱搭配管理 Web 应用，面向希望数字化管
 
 用户可以上传自己的衣物图片，按品类、颜色、季节和标签管理衣物，并在搭配编辑器中组合、预览、保存和复用穿搭方案。项目目标是减少用户反复试穿或手工拼图的成本，让用户能基于自己的真实衣物图片完成搭配规划。
 
-本项目是 AI4SE 期末项目 B（非 harness 应用类项目）。当前已完成 SPEC、PLAN、冷启动验证、T1 项目骨架和 T2A 数据库迁移验证；尚未进入 REST 业务功能实现。
+本项目是 AI4SE 期末项目 B（非 harness 应用类项目）。当前已完成 SPEC、PLAN、冷启动验证、T1 项目骨架、T2A 数据库迁移验证、T2B JPA/Repository 映射验证和 T3A 后端认证会话 API；尚未进入个人资料、衣物、搭配、Docker、CI 或部署实现。
 
 ## 目标用户
 
@@ -59,6 +59,7 @@ SPEC 阶段确定的 MVP 功能包括：
 - [x] 创建后端、前端和测试入口骨架
 - [x] 创建后端 MySQL schema migration 并用 Testcontainers 验证
 - [x] 创建后端 JPA 领域对象、枚举转换和 Repository 映射验证
+- [x] 实现后端注册、登录、退出和 HttpOnly Cookie 会话
 - [ ] 实现核心功能
 - [ ] 配置测试与 CI
 - [ ] 完成部署与分发
@@ -75,7 +76,7 @@ SPEC 阶段确定的 MVP 功能包括：
 
 ## 目录结构
 
-当前仓库处于实现早期阶段，已包含项目骨架和首个数据库迁移，主要文件包括：
+当前仓库处于实现早期阶段，已包含项目骨架、数据库迁移、JPA/Repository 映射和后端认证会话 API，主要文件包括：
 
 ```text
 .
@@ -126,7 +127,7 @@ SPEC 阶段确定的 MVP 功能包括：
 
 ## 安装与运行
 
-当前已有最小项目骨架和数据库迁移，没有业务功能页面或业务 API。
+当前已有最小项目骨架、数据库迁移、JPA/Repository 映射和后端认证 API。前端仍没有业务功能页面。
 
 后端测试命令：
 
@@ -155,9 +156,10 @@ make test
 - 后端：Spring Boot context 启动并暴露 `/actuator/health`。
 - 后端数据库：Flyway 可在 Testcontainers MySQL 上干净执行 `V1__initial_schema.sql`，并验证必需表、关键字段、唯一约束、枚举约束和跨用户归属约束。
 - 后端 Repository：JPA Entity 与 Spring Data Repository 可在 Testcontainers MySQL 上保存和读取核心对象，并验证 draft 衣物、标签唯一约束和 `outfit_items` 外键约束。
+- 后端认证：`POST /api/auth/register`、`POST /api/auth/login`、`POST /api/auth/logout`，覆盖 BCrypt 密码哈希、重复用户名、统一登录失败信息、`MMF_SESSION` HttpOnly Cookie、7 天过期、`SameSite=Lax` 和登出清理。
 - 前端：Vue 应用壳渲染 `MixMyFit`。
 
-后续任务会逐步加入认证、衣物、搭配、E2E 和 CI 测试。
+后续任务会逐步加入个人资料、衣物、搭配、E2E 和 CI 测试。
 
 ## 分发与部署
 
@@ -179,9 +181,11 @@ MixMyFit MVP 不调用 LLM、agent 或外部 AI API，因此不需要配置 LLM 
 
 真实数据库密码、Token 或其他生产凭据不得提交到 Git。后续如需要配置文件模板，应只提交示例配置，不提交真实凭据。
 
+T3A 认证会话实现使用后端设置的 `MMF_SESSION` Cookie。Cookie 本地默认 `HttpOnly`、`SameSite=Lax`、7 天过期；生产 HTTPS 部署时应通过配置启用 Secure Cookie。密码使用 BCrypt 哈希保存，不保存明文密码。
+
 ## 已知限制
 
-- 当前仅完成项目骨架，没有注册登录、衣物管理、搭配编辑器或搭配方案功能。
-- 已创建数据库迁移、JPA Entity 和 Repository；REST API、Docker 和 CI 文件尚未创建。
+- 当前已完成后端注册、登录和退出 API；尚未实现个人资料、修改密码、衣物管理、搭配编辑器或搭配方案功能。
+- 已创建数据库迁移、JPA Entity、Repository 和认证 REST API；Docker 和 CI 文件尚未创建。
 - Docker、CI、部署和线上 URL 尚未完成。
 - 当前开发机 shell 中 `mvn` 和 `make` 不在 PATH；需要配置本地工具链后才能直接运行 `cd backend && mvn test` 和 `make test`。

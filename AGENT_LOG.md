@@ -42,6 +42,25 @@
 - 人工干预：用户确认开始 T2B；Codex 经用户批准启动 Docker Desktop；无真实凭据写入。
 - 我学到的教训：T2B 这类 ORM task 应用真实 MySQL 约束驱动映射设计，尤其是复合外键列需要明确可写字段和只读导航关系，否则 Hibernate 元数据启动阶段就会暴露冲突。
 
+## 2026-08-12 17:50 +08:00
+
+- Task 编号：T3A 后端注册、登录、退出与 HttpOnly Cookie 会话。
+- 使用技能：`superpowers:using-superpowers`、`superpowers:brainstorming`、`superpowers:test-driven-development`、`superpowers:executing-plans`、`superpowers:using-git-worktrees`、`superpowers:systematic-debugging`、`superpowers:verification-before-completion`。
+- 使用智能体：Codex。
+- 工作区 / 分支：`D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-03a-auth-session`；`git branch --show-current` 显示 `task/03a-auth-session`；已确认是 linked worktree。
+- 输入 prompt 摘要：只执行 `PLAN.md` 的 Task 3A；先读 `SPEC.md`、`PLAN.md`、`AGENT_LOG.md`；先输出任务理解、拟修改文件、失败测试清单和完成标准，用户确认后按 TDD 开始；不实现其他 task，不写入真实凭据。
+- Codex 输出摘要：新增认证 endpoint、auth service、BCrypt 密码哈希、`MMF_SESSION` Cookie 创建/清除、内存 session registry 和统一认证错误响应；新增 `AuthEndpointTest` 覆盖注册、重复用户名、登录 Cookie、安全失败信息和登出清理；未实现 T3B profile/password 或 T4 用户隔离 helper。
+- 生成或修改的文件：`backend/pom.xml`、`backend/src/main/java/com/fan/mixmyfit/auth/`、`backend/src/main/java/com/fan/mixmyfit/security/`、`backend/src/main/java/com/fan/mixmyfit/domain/repository/UserRepository.java`、`backend/src/test/java/com/fan/mixmyfit/auth/AuthEndpointTest.java`、`backend/src/test/java/com/fan/mixmyfit/HealthSmokeTest.java`、`PLAN.md`、`AGENT_LOG.md`。
+- 测试结果：RED：`AuthEndpointTest` 因缺少 `spring-security-crypto`、`PasswordEncoder` 和 `UserRepository.findByUsername` 编译失败；新增登出服务端 session 失效断言后，因 session 仍包含用户 ID 失败。GREEN：`AuthEndpointTest` 通过，`Tests run: 5, Failures: 0, Errors: 0, Skipped: 0`；完整后端 `mvn test` 通过，`Tests run: 18, Failures: 0, Errors: 0, Skipped: 0`。
+- TDD 过程：RED 1：新增 `AuthEndpointTest` 后，`mvn -Dtest=AuthEndpointTest test` 因缺少 `spring-security-crypto`、`PasswordEncoder` 和 `UserRepository.findByUsername` 编译失败。GREEN 1：加入最小 auth controller/service、BCrypt 配置、session cookie 工厂、内存 session registry 和 repository 查询方法后，`AuthEndpointTest` 通过。RED 2：补充登出必须使服务端 session 失效的断言后，测试因 session 仍包含用户 ID 失败。GREEN 2：登出读取 `MMF_SESSION` Cookie 并 invalidate session 后，`AuthEndpointTest` 通过。重构/收敛：保持 `auth/`、`security/` 分包，保留原 health smoke test 的无数据库边界并使用 test-only `UserRepository` mock。
+- 测试命令和结果：`mvn -Dtest=AuthEndpointTest test` 初始 RED 编译失败；`mvn -Dtest=AuthEndpointTest test` 最终通过，`Tests run: 5, Failures: 0, Errors: 0, Skipped: 0`；完整后端 `mvn test` 最终通过，`Tests run: 18, Failures: 0, Errors: 0, Skipped: 0`。实际执行使用本机 `.m2\wrapper` 中 Maven 可执行文件。
+- 第一阶段评审（SPEC / PLAN 合规检查）：结论通过；Critical issues：无。处理结果：无需阻塞修复；记录了非阻塞后续事项，包括全局错误响应、生产 Secure Cookie 配置和 T4 current-user resolver。
+- 第二阶段评审（代码质量检查）：结论通过；Critical issues：无。处理结果：无需阻塞修复；记录了非阻塞建议，包括全局 error handler、session TTL 清理和测试 fixture 去重。
+- finishing-a-development-branch 收尾判断：保留当前分支，暂不开 PR / 暂不合并 / 不丢弃；原因是 README 与过程记录需要收尾，且提交后还需回填真实 commit hash。
+- Commit hash：待填写。
+- 人工干预：用户确认开始 T3A；用户要求进行第一阶段 SPEC/PLAN 合规评审、第二阶段代码质量评审和 finishing 收尾判断；无真实凭据写入。
+- 我学到的教训：引入业务 controller 后，无数据库 smoke test 也会扫描到新 bean；这类测试要显式保留其边界，例如使用 test-only repository mock，而不是让健康检查测试隐式依赖数据库。T3A 这类会话 task 也要在 Cookie 清除之外测试服务端 session 状态，否则容易只完成浏览器侧清理。
+
 ## 2026-XX-XX HH:mm
 
 - Task 编号：
