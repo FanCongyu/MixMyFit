@@ -72,7 +72,7 @@
 - 测试命令和结果: `mvn -Dtest=ProfileEndpointTest test` 通过，`Tests run: 5, Failures: 0, Errors: 0, Skipped: 0`; `mvn -Dtest=AuthEndpointTest,ProfileEndpointTest test` 通过，`Tests run: 10, Failures: 0, Errors: 0, Skipped: 0`; 完整后端 `mvn test` 通过，`Tests run: 23, Failures: 0, Errors: 0, Skipped: 0`。实际使用本机 `.m2\wrapper` 中 Maven 可执行文件。
 - SPEC / PLAN 合规检查结论: 通过; 已覆盖 `GET /api/profile`、`PATCH /api/profile`、`POST /api/profile/password`; 未登录请求返回 `401`; 未实现 T4 helper 或其他业务资源 endpoint; 未写入真实凭据。
 - 代码质量检查结论: 通过; Critical issues: 无。Non-critical: profile/auth 测试的 Testcontainers DataSource fixture 有重复，后续可在 T4 或测试 support 中整理; request 空体保护可后续统一处理。
-- finishing-a-development-branch 判断: 保留当前分支，暂不开 PR / 不合并 / 不丢弃; Commit: 待填写。
+- finishing-a-development-branch 判断: 保留当前分支，暂不开 PR / 不合并 / 不丢弃; Commit: `78e94e3`。
 - 人工干预和教训: 用户要求修复评审发现的 `401 Unauthorized` contract 问题; 教训是安全/认证状态码应按 SPEC 通用 API 约定写测试，不能只断言“被拒绝”。
 
 ## 2026-XX-XX HH:mm
