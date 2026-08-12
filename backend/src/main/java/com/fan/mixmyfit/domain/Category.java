@@ -77,6 +77,10 @@ public class Category {
         return updatedAt;
     }
 
+    public void rename(String name) {
+        this.name = name;
+    }
+
     @Override
     public boolean equals(Object other) {
         if (this == other) {

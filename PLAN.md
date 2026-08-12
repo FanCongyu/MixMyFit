@@ -454,6 +454,24 @@
 
 ### T5：后端品类与标签 API
 
+**状态：** 已完成。
+
+**分支 / worktree：** `task/05-category-tags`；`D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-05-category-tags`。
+
+**测试结果：**
+- TDD 红灯：`mvn test -Dtest=CategoryEndpointTest,TagEndpointTest` 初次运行 4 个测试因 endpoint 缺失返回 `404 NOT_FOUND`。
+- Task 相关测试：`mvn test -Dtest=CategoryEndpointTest,TagEndpointTest` 通过，`Tests run: 6, Failures: 0, Errors: 0, Skipped: 0`。
+- 回归测试：`mvn test -Dtest=HealthSmokeTest` 通过，`Tests run: 1, Failures: 0, Errors: 0, Skipped: 0`。
+- 完整后端测试：`mvn test` 通过，`Tests run: 34, Failures: 0, Errors: 0, Skipped: 0`。
+
+**SPEC 合规检查：** 通过。
+
+**代码质量检查：** 通过。
+
+**完成分支决定：** 开 PR。
+
+**Commit hash：** 待填写。
+
 **目标：** 实现固定/自定义品类 API，以及分离建模的衣物标签和搭配方案标签 API。
 
 **依赖关系：** T4。
