@@ -1,21 +1,18 @@
 package com.fan.mixmyfit.user;
 
 import com.fan.mixmyfit.domain.User;
-import com.fan.mixmyfit.domain.repository.UserRepository;
-import com.fan.mixmyfit.security.SessionRegistry;
+import com.fan.mixmyfit.security.CurrentUserResolver;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 class ProfileService {
-    private final UserRepository users;
-    private final SessionRegistry sessions;
+    private final CurrentUserResolver currentUsers;
     private final PasswordEncoder passwordEncoder;
 
-    ProfileService(UserRepository users, SessionRegistry sessions, PasswordEncoder passwordEncoder) {
-        this.users = users;
-        this.sessions = sessions;
+    ProfileService(CurrentUserResolver currentUsers, PasswordEncoder passwordEncoder) {
+        this.currentUsers = currentUsers;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -43,10 +40,7 @@ class ProfileService {
     }
 
     private User currentUser(String sessionId) {
-        Long userId = sessions.findUserId(sessionId)
-                .orElseThrow(() -> new UserException("AUTHENTICATION_REQUIRED", "Authentication is required"));
-        return users.findById(userId)
-                .orElseThrow(() -> new UserException("AUTHENTICATION_REQUIRED", "Authentication is required"));
+        return currentUsers.requireUser(sessionId);
     }
 
     private static String required(String value, String code, String message) {
