@@ -1,6 +1,8 @@
 spring:
   application:
     name: mixmyfit
+  jpa:
+    open-in-view: false
 
 management:
   endpoints:

@@ -58,6 +58,7 @@ SPEC 阶段确定的 MVP 功能包括：
 - [x] 完成冷启动验证
 - [x] 创建后端、前端和测试入口骨架
 - [x] 创建后端 MySQL schema migration 并用 Testcontainers 验证
+- [x] 创建后端 JPA 领域对象、枚举转换和 Repository 映射验证
 - [ ] 实现核心功能
 - [ ] 配置测试与 CI
 - [ ] 完成部署与分发
@@ -90,6 +91,8 @@ SPEC 阶段确定的 MVP 功能包括：
 │   ├── pom.xml
 │   └── src/
 │       ├── main/java/com/fan/mixmyfit/MixMyFitApplication.java
+│       ├── main/java/com/fan/mixmyfit/domain/
+│       ├── main/java/com/fan/mixmyfit/domain/repository/
 │       ├── main/resources/
 │       │   ├── application.yml
 │       │   └── db/migration/V1__initial_schema.sql
@@ -97,6 +100,7 @@ SPEC 阶段确定的 MVP 功能包括：
 │           ├── HealthSmokeTest.java
 │           └── domain/
 │               ├── MigrationScriptTest.java
+│               ├── RepositoryMappingTest.java
 │               └── SchemaMigrationTest.java
 ├── frontend/
 │   ├── package.json
@@ -150,6 +154,7 @@ make test
 
 - 后端：Spring Boot context 启动并暴露 `/actuator/health`。
 - 后端数据库：Flyway 可在 Testcontainers MySQL 上干净执行 `V1__initial_schema.sql`，并验证必需表、关键字段、唯一约束、枚举约束和跨用户归属约束。
+- 后端 Repository：JPA Entity 与 Spring Data Repository 可在 Testcontainers MySQL 上保存和读取核心对象，并验证 draft 衣物、标签唯一约束和 `outfit_items` 外键约束。
 - 前端：Vue 应用壳渲染 `MixMyFit`。
 
 后续任务会逐步加入认证、衣物、搭配、E2E 和 CI 测试。
@@ -177,6 +182,6 @@ MixMyFit MVP 不调用 LLM、agent 或外部 AI API，因此不需要配置 LLM 
 ## 已知限制
 
 - 当前仅完成项目骨架，没有注册登录、衣物管理、搭配编辑器或搭配方案功能。
-- 已创建数据库迁移；JPA Entity、Repository、REST API、Docker 和 CI 文件尚未创建。
+- 已创建数据库迁移、JPA Entity 和 Repository；REST API、Docker 和 CI 文件尚未创建。
 - Docker、CI、部署和线上 URL 尚未完成。
 - 当前开发机 shell 中 `mvn` 和 `make` 不在 PATH；需要配置本地工具链后才能直接运行 `cd backend && mvn test` 和 `make test`。

@@ -231,6 +231,19 @@
 
 ### T2B：后端领域对象、ORM 映射与 Repository 验证
 
+**状态：** [x] 已完成，2026-08-12。
+
+**完成记录：**
+- 已添加 Spring Data JPA 依赖，并关闭 `spring.jpa.open-in-view`。
+- 已为 `users`、`categories`、`clothes`、`clothing_seasons`、`clothing_tags`、`clothing_tag_links`、`outfit_tags`、`outfits`、`outfit_seasons`、`outfit_tag_links`、`outfit_items` 建立最小 JPA Entity 映射。
+- 已添加数据库小写枚举值与 Java enum 的 AttributeConverter，保持 schema 值如 `draft`、`ready`、`main_slot` 与 Java 枚举命名分离。
+- 已添加 11 个 Spring Data Repository 接口，位于 `backend/src/main/java/com/fan/mixmyfit/domain/repository/`。
+- 已添加 `RepositoryMappingTest`，使用 Testcontainers MySQL 和 Flyway 迁移验证 Repository 映射，不使用 H2。
+- RED：新增 Repository 映射测试因缺少 Entity/Repository 和 JPA/DataAccess 依赖编译失败；首次 GREEN 尝试暴露 `outfit_items.user_id` 复合外键映射冲突，后修正为本地 id 列可写、关联对象只读导航。
+- GREEN：完整后端 `mvn test` 通过，`Tests run: 13, Failures: 0, Errors: 0, Skipped: 0`。
+- 本 task 未实现 REST endpoint、认证、业务 service、前端 UI、Docker 或 CI，未写入真实凭据。
+- Commit hash：未提交。
+
 **目标：** 在 T2A 的 schema 基础上实现领域对象、JPA/ORM 映射和 Repository 测试，确保 Java 模型与数据库约束一致。
 
 **依赖关系：** T2A。
