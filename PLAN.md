@@ -470,7 +470,7 @@
 
 **完成分支决定：** 开 PR。
 
-**Commit hash：** 待填写。
+**Commit hash：** 8aabd8c31de8f4be2a077f2cca39a12267c4ab69。
 
 **目标：** 实现固定/自定义品类 API，以及分离建模的衣物标签和搭配方案标签 API。
 
