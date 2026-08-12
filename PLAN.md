@@ -400,6 +400,24 @@
 
 ### T4：后端安全边界与用户隔离测试基线
 
+**状态：** 已完成。
+
+**执行分支 / worktree：** `task/04-user-isolation`
+
+**测试结果：**
+- RED：`mvn -Dtest=UserIsolationSupportTest test` 因缺少 `CurrentUserResolver`、`OwnershipGuard`、`AccessDeniedException` 编译失败，确认失败测试有效。
+- GREEN：`mvn -Dtest=UserIsolationSupportTest test` 通过，`Tests run: 5, Failures: 0, Errors: 0, Skipped: 0`。
+- 相关测试：`mvn -Dtest=UserIsolationSupportTest,ProfileEndpointTest,AuthEndpointTest test` 通过，`Tests run: 15, Failures: 0, Errors: 0, Skipped: 0`。
+- 完整后端测试：`mvn test` 通过，`Tests run: 28, Failures: 0, Errors: 0, Skipped: 0`。
+
+**SPEC 合规检查：** 通过。
+
+**代码质量检查：** 通过。
+
+**完成分支决定：** 开 PR。
+
+**Commit hash：** 待填写。
+
 **目标：** 提供可复用的当前用户与资源归属校验工具，以及用户隔离测试 fixture。
 
 **依赖关系：** T3A。
@@ -432,6 +450,7 @@
 **是否可并行：** 否。
 
 **建议分支 / worktree：** `task/04-user-isolation`
+
 
 ### T5：后端品类与标签 API
 

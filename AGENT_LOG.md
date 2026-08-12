@@ -75,6 +75,20 @@
 - finishing-a-development-branch 判断: 保留当前分支，暂不开 PR / 不合并 / 不丢弃; Commit: `78e94e3`。
 - 人工干预和教训: 用户要求修复评审发现的 `401 Unauthorized` contract 问题; 教训是安全/认证状态码应按 SPEC 通用 API 约定写测试，不能只断言“被拒绝”。
 
+## 2026-08-12 21:10 +08:00
+
+- Task 编号和标题：T4 后端安全边界与用户隔离测试基线。
+- 分支 / worktree：`task/04-user-isolation`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-04-user-isolation`; 已确认是 linked worktree。
+- 使用的 subagent：Codex。
+- TDD 红灯摘要：新增 `UserIsolationSupportTest` 和测试 support fixture 后，`mvn -Dtest=UserIsolationSupportTest test` 因缺少 `CurrentUserResolver`、`OwnershipGuard`、`AccessDeniedException` 编译失败，确认失败测试有效；初次 `mvn` 命令因 PATH 无 `mvn` 失败，随后改用本机 `.m2\wrapper` 中 Maven 可执行文件重新验证。
+- TDD 绿灯摘要：新增 `CurrentUserResolver`、`OwnershipGuard`、security 异常与统一 `{code,message}` 响应；`ProfileService` 改为复用统一 current-user resolver；新增用户 A/B 独立 Cookie 测试 fixture。
+- 重构摘要：整理 `OwnershipGuard` 条件格式，补强 `AuthenticatedUserFixture` 对注册、登录和 Set-Cookie 的状态断言，避免测试失败时出现低质量 NPE。
+- 测试命令和结果：`mvn -Dtest=UserIsolationSupportTest test` 通过，`Tests run: 5, Failures: 0, Errors: 0, Skipped: 0`; `mvn -Dtest=UserIsolationSupportTest,ProfileEndpointTest,AuthEndpointTest test` 通过，`Tests run: 15, Failures: 0, Errors: 0, Skipped: 0`; 完整后端 `mvn test` 通过，`Tests run: 28, Failures: 0, Errors: 0, Skipped: 0`。实际执行使用本机 `.m2\wrapper` 中 Maven 可执行文件。
+- SPEC / PLAN 合规检查结论：通过；只完成 Task 4；未新增业务资源 endpoint；满足未登录 401、跨用户资源归属拒绝 404、统一错误响应、用户隔离测试 fixture 和 ownership helper 要求；未写入真实凭据。
+- 代码质量检查结论：通过；结构、命名、异常处理和测试可靠性满足当前 task；Critical issues 无。Non-critical：后续可抽取重复 Testcontainers 配置；如引入 Spring Security，可考虑避免 `AccessDeniedException` 与框架常用命名混淆。
+- finishing-a-development-branch 判断：开 PR；完整后端测试已通过，当前分支适合提交后创建 PR。
+- 人工干预和教训：用户要求文档收尾并明确 README 仅必要时更新；本 task 无需 README 更新。教训是文档收尾前要明确 staged/unstaged 状态，避免提交遗漏：当前新增文件已 staged，`ProfileService.java` 和文档改动需一并纳入提交。
+
 ## 2026-XX-XX HH:mm
 
 - Task 编号：
