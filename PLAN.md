@@ -282,6 +282,25 @@
 
 ### T3A：后端注册、登录、退出与 HttpOnly Cookie 会话
 
+**状态：** [x] 已完成，2026-08-12。
+
+**完成记录：**
+- 已实现 `POST /api/auth/register`、`POST /api/auth/login`、`POST /api/auth/logout`。
+- 注册成功返回 `201` 和不含密码哈希的用户响应；登录成功返回 `200`、用户响应和 `MMF_SESSION` Cookie；登出成功返回 `204` 并清除 Cookie。
+- 已使用 `spring-security-crypto` 的 BCrypt 保存密码哈希，未保存明文密码。
+- 已拒绝重复用户名；登录失败统一返回 `INVALID_CREDENTIALS`，不区分用户名是否存在。
+- `MMF_SESSION` 使用服务端生成的随机不透明 session id；Cookie 设置 `HttpOnly`、`SameSite=Lax`、默认 `Max-Age=604800` 秒；登出时同时删除服务端内存 session 映射。
+- 为保持原有无数据库 health smoke test 范围，`HealthSmokeTest` 使用 test-only `UserRepository` mock。
+- RED：新增 `AuthEndpointTest` 后，因缺少 `spring-security-crypto`、`PasswordEncoder` 和 `UserRepository.findByUsername` 编译失败；随后新增登出服务端 session 失效断言，因 session 未删除失败。
+- GREEN：`AuthEndpointTest` 通过，`Tests run: 5, Failures: 0, Errors: 0, Skipped: 0`；完整后端 `mvn test` 通过，`Tests run: 18, Failures: 0, Errors: 0, Skipped: 0`。
+- 分支 / worktree：`task/03a-auth-session`，工作区 `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-03a-auth-session`，已确认是 linked worktree。
+- 测试结果：使用本机 `.m2\wrapper` 中 Maven 可执行文件运行 `mvn test`，最终通过，`Tests run: 18, Failures: 0, Errors: 0, Skipped: 0`。
+- Spec 合规检查结论：通过；Critical issues：无；处理结果：无需阻塞修复。
+- 代码质量检查结论：通过；Critical issues：无；处理结果：非阻塞建议留待后续 task 或全局错误处理整理。
+- 完成分支决定：保留当前分支，暂不开 PR / 暂不合并；原因是 README 和过程记录需要收尾，且提交后还需回填 commit hash。
+- 本 task 未实现 `GET /api/profile`、`PATCH /api/profile` 或 `POST /api/profile/password`；这些仍属于 T3B。未实现 T4 用户隔离 helper，未写入真实凭据。
+- Commit hash：`f328fda4aacf38aff10e4ec2d717f90fd0857fa2`。
+
 **目标：** 实现注册、登录、退出、密码哈希和后端管理的 HttpOnly Cookie 会话。
 
 **依赖关系：** T2B。
