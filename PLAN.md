@@ -299,7 +299,7 @@
 - 代码质量检查结论：通过；Critical issues：无；处理结果：非阻塞建议留待后续 task 或全局错误处理整理。
 - 完成分支决定：保留当前分支，暂不开 PR / 暂不合并；原因是 README 和过程记录需要收尾，且提交后还需回填 commit hash。
 - 本 task 未实现 `GET /api/profile`、`PATCH /api/profile` 或 `POST /api/profile/password`；这些仍属于 T3B。未实现 T4 用户隔离 helper，未写入真实凭据。
-- Commit hash：待填写。
+- Commit hash：`f328fda4aacf38aff10e4ec2d717f90fd0857fa2`。
 
 **目标：** 实现注册、登录、退出、密码哈希和后端管理的 HttpOnly Cookie 会话。
 

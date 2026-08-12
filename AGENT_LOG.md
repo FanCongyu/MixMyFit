@@ -57,7 +57,7 @@
 - 第一阶段评审（SPEC / PLAN 合规检查）：结论通过；Critical issues：无。处理结果：无需阻塞修复；记录了非阻塞后续事项，包括全局错误响应、生产 Secure Cookie 配置和 T4 current-user resolver。
 - 第二阶段评审（代码质量检查）：结论通过；Critical issues：无。处理结果：无需阻塞修复；记录了非阻塞建议，包括全局 error handler、session TTL 清理和测试 fixture 去重。
 - finishing-a-development-branch 收尾判断：保留当前分支，暂不开 PR / 暂不合并 / 不丢弃；原因是 README 与过程记录需要收尾，且提交后还需回填真实 commit hash。
-- Commit hash：待填写。
+- Commit hash：`f328fda4aacf38aff10e4ec2d717f90fd0857fa2`。
 - 人工干预：用户确认开始 T3A；用户要求进行第一阶段 SPEC/PLAN 合规评审、第二阶段代码质量评审和 finishing 收尾判断；无真实凭据写入。
 - 我学到的教训：引入业务 controller 后，无数据库 smoke test 也会扫描到新 bean；这类测试要显式保留其边界，例如使用 test-only repository mock，而不是让健康检查测试隐式依赖数据库。T3A 这类会话 task 也要在 Cookie 清除之外测试服务端 session 状态，否则容易只完成浏览器侧清理。
 
