@@ -242,7 +242,7 @@
 - RED：新增 Repository 映射测试因缺少 Entity/Repository 和 JPA/DataAccess 依赖编译失败；首次 GREEN 尝试暴露 `outfit_items.user_id` 复合外键映射冲突，后修正为本地 id 列可写、关联对象只读导航。
 - GREEN：完整后端 `mvn test` 通过，`Tests run: 13, Failures: 0, Errors: 0, Skipped: 0`。
 - 本 task 未实现 REST endpoint、认证、业务 service、前端 UI、Docker 或 CI，未写入真实凭据。
-- Commit hash：未提交。
+- Commit hash：`e7e5a1c55c7757510e4d67dbfd70a4bffc96ebd4`。
 
 **目标：** 在 T2A 的 schema 基础上实现领域对象、JPA/ORM 映射和 Repository 测试，确保 Java 模型与数据库约束一致。
 

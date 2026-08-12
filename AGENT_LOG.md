@@ -38,7 +38,7 @@
 - Codex 输出摘要：为后端添加 Spring Data JPA、领域 Entity、数据库枚举转换器和 11 个 Repository 接口；新增 Testcontainers MySQL Repository 映射测试；未实现 REST endpoint、认证、业务 service 或前端 UI。
 - 生成或修改的文件：`backend/pom.xml`、`backend/src/main/resources/application.yml`、`backend/src/main/java/com/fan/mixmyfit/domain/`、`backend/src/main/java/com/fan/mixmyfit/domain/repository/`、`backend/src/test/java/com/fan/mixmyfit/HealthSmokeTest.java`、`backend/src/test/java/com/fan/mixmyfit/domain/RepositoryMappingTest.java`、`README.md`、`PLAN.md`、`AGENT_LOG.md`。
 - 测试结果：基线：Docker 启动后，使用 JetBrains 自带 Maven 可执行文件运行完整后端 `mvn test` 通过，`Tests run: 9, Failures: 0, Errors: 0, Skipped: 0`。RED：新增 `RepositoryMappingTest` 因缺少 `domain` Entity、Repository 和 JPA/DataAccess 依赖编译失败。GREEN 过程：首次实现后因 `outfit_items.user_id` 在 `OutfitItem` 中被复合外键与本地字段重复映射而失败；修正为本地 id 列可写、关联对象只读导航后，后端 `mvn test` 通过，`Tests run: 13, Failures: 0, Errors: 0, Skipped: 0`。
-- Commit hash：未提交。
+- Commit hash：`e7e5a1c55c7757510e4d67dbfd70a4bffc96ebd4`。
 - 人工干预：用户确认开始 T2B；Codex 经用户批准启动 Docker Desktop；无真实凭据写入。
 - 我学到的教训：T2B 这类 ORM task 应用真实 MySQL 约束驱动映射设计，尤其是复合外键列需要明确可写字段和只读导航关系，否则 Hibernate 元数据启动阶段就会暴露冲突。
 
