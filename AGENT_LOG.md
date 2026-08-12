@@ -91,6 +91,20 @@
 
 - Commit hash：`505f4e28d2015e4587b959d554a513cdef8be793`。
 
+## 2026-08-12 21:55 +08:00
+
+- Task 编号和标题：T5 后端品类与标签 API。
+- 分支 / worktree：`task/05-category-tags`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-05-category-tags`; linked worktree。
+- 使用的 subagent：Codex。
+- TDD 红灯摘要：新增 `CategoryEndpointTest` 和 `TagEndpointTest` 后，`mvn test -Dtest=CategoryEndpointTest,TagEndpointTest` 初次运行 4 个测试因 `/api/categories`、`/api/clothing-tags`、`/api/outfit-tags` endpoint 缺失返回 `404_NOT_FOUND`。
+- TDD 绿灯摘要：新增 `category/` controller/service/request/response/error 处理，支持固定品类可见、自定义品类创建/读取/更新和用户隔离；新增 `tag/` controller/service/request/response/error 处理，衣物标签与搭配标签分开创建/查询并绑定当前用户；补充 repository 归属查询和重复名检查。
+- 重构摘要：为兼容无数据库的 `HealthSmokeTest`，`CategoryService` 和 `TagService` 使用 `ObjectProvider` 延迟获取 repository；整理 imports；未修改业务范围外代码。
+- 测试命令和结果：`mvn test -Dtest=CategoryEndpointTest,TagEndpointTest` 通过，`Tests run: 6, Failures: 0, Errors: 0, Skipped: 0`; `mvn test -Dtest=HealthSmokeTest` 通过，`Tests run: 1, Failures: 0, Errors: 0, Skipped: 0`; 完整后端 `mvn test` 通过，`Tests run: 34, Failures: 0, Errors: 0, Skipped: 0`。实际使用本机 `.m2\wrapper` 中 Maven 可执行文件。
+- SPEC / PLAN 合规检查结论：通过；只完成 Task 5，满足固定/自定义品类、衣物标签与搭配标签分开建模、user_id 隔离、重复名约束和 TDD 验证要求；未写入真实凭据。
+- 代码质量检查结论：通过；Critical issues：无。Non-critical：固定品类按需初始化后续可考虑 migration seed；测试 DataSource 样板后续可抽公共配置；可补用户 A 看不到用户 B 标签列表测试。
+- finishing-a-development-branch 判断：开 PR；当前分支测试通过，适合提交后创建 PR。Commit hash：8aabd8c31de8f4be2a077f2cca39a12267c4ab69。
+- 人工干预和教训：用户要求先做快速收尾评审再文档收尾；README 经评估无需更新。教训是 Maven 测试不要并行共享同一 `target` 目录，且新增业务 controller 需要考虑无数据库 smoke test 的应用上下文边界。
+
 ## 2026-XX-XX HH:mm
 
 - Task 编号：
