@@ -89,6 +89,8 @@
 - finishing-a-development-branch 判断：开 PR；完整后端测试已通过，当前分支适合提交后创建 PR。
 - 人工干预和教训：用户要求文档收尾并明确 README 仅必要时更新；本 task 无需 README 更新。教训是文档收尾前要明确 staged/unstaged 状态，避免提交遗漏：当前新增文件已 staged，`ProfileService.java` 和文档改动需一并纳入提交。
 
+- Commit hash：`505f4e28d2015e4587b959d554a513cdef8be793`。
+
 ## 2026-XX-XX HH:mm
 
 - Task 编号：
