@@ -345,6 +345,23 @@
 
 ### T3B：后端个人资料查看、昵称修改与密码修改
 
+**状态：** [x] 已完成，2026-08-12。
+
+**完成记录：**
+- 已实现 `GET /api/profile`、`PATCH /api/profile`、`POST /api/profile/password`。
+- 已登录用户可读取 `userId`、`username`、`nickname`；响应不包含 password 或 password hash。
+- 已登录用户可修改自己的昵称；测试覆盖用户 A 修改昵称不影响用户 B。
+- 修改密码必须提供旧密码并验证；旧密码错误返回安全错误；修改成功后旧密码登录失败，新密码可登录。
+- 未登录 profile 请求返回 `401 Unauthorized`，符合 `SPEC.md` 需要认证接口的状态码约定。
+- RED：新增 `ProfileEndpointTest` 后，profile 相关 endpoint 缺失导致 `404`；修正未登录状态码 contract 时先观察到 `expected: 401 UNAUTHORIZED but was: 400 BAD_REQUEST`。
+- GREEN：`ProfileEndpointTest` 通过，`Tests run: 5, Failures: 0, Errors: 0, Skipped: 0`。
+- 分支 / worktree：`task/03b-profile-password`，工作区 `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-03b-profile-password`，已确认是 linked worktree。
+- 测试结果：`mvn -Dtest=ProfileEndpointTest test` 通过，`Tests run: 5, Failures: 0, Errors: 0, Skipped: 0`；`mvn -Dtest=AuthEndpointTest,ProfileEndpointTest test` 通过，`Tests run: 10, Failures: 0, Errors: 0, Skipped: 0`；完整后端 `mvn test` 通过，`Tests run: 23, Failures: 0, Errors: 0, Skipped: 0`。
+- SPEC 合规检查：通过；Critical issues：无。
+- 代码质量检查：通过；Critical issues：无；非阻塞建议留待 T4 或测试 support 整理。
+- 完成分支决定：保留，暂不开 PR / 不合并 / 不丢弃。
+- Commit：`78e94e3`。
+
 **目标：** 实现个人资料读取、昵称修改和需要验证旧密码的密码修改。
 
 **依赖关系：** T3A。

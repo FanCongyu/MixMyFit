@@ -61,6 +61,20 @@
 - 人工干预：用户确认开始 T3A；用户要求进行第一阶段 SPEC/PLAN 合规评审、第二阶段代码质量评审和 finishing 收尾判断；无真实凭据写入。
 - 我学到的教训：引入业务 controller 后，无数据库 smoke test 也会扫描到新 bean；这类测试要显式保留其边界，例如使用 test-only repository mock，而不是让健康检查测试隐式依赖数据库。T3A 这类会话 task 也要在 Cookie 清除之外测试服务端 session 状态，否则容易只完成浏览器侧清理。
 
+## 2026-08-12 20:27 +08:00
+
+- Task: T3B 后端个人资料查看、昵称修改与密码修改。
+- 分支 / worktree: `task/03b-profile-password`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-03b-profile-password`; 已确认是 linked worktree。
+- 使用的 subagent: Codex。
+- TDD 红灯: 新增 `ProfileEndpointTest` 后，`GET /api/profile`、`PATCH /api/profile`、`POST /api/profile/password` 因 endpoint 缺失返回 `404`; 后续把未登录 profile contract 从错误的 `400` 修正为 `401` 时，测试先失败，`expected: 401 UNAUTHORIZED but was: 400 BAD_REQUEST`。
+- TDD 绿灯: 新增最小 `user` controller/service/request/response/error 处理，实现当前 session 用户 profile 读取、昵称更新、旧密码校验后更新密码; `AUTHENTICATION_REQUIRED` 映射为 `401 Unauthorized`。
+- 重构摘要: 仅在 `User` 实体增加 `updateNickname` 和 `updatePasswordHash`; 未抽取 T4 current-user helper，避免越界。
+- 测试命令和结果: `mvn -Dtest=ProfileEndpointTest test` 通过，`Tests run: 5, Failures: 0, Errors: 0, Skipped: 0`; `mvn -Dtest=AuthEndpointTest,ProfileEndpointTest test` 通过，`Tests run: 10, Failures: 0, Errors: 0, Skipped: 0`; 完整后端 `mvn test` 通过，`Tests run: 23, Failures: 0, Errors: 0, Skipped: 0`。实际使用本机 `.m2\wrapper` 中 Maven 可执行文件。
+- SPEC / PLAN 合规检查结论: 通过; 已覆盖 `GET /api/profile`、`PATCH /api/profile`、`POST /api/profile/password`; 未登录请求返回 `401`; 未实现 T4 helper 或其他业务资源 endpoint; 未写入真实凭据。
+- 代码质量检查结论: 通过; Critical issues: 无。Non-critical: profile/auth 测试的 Testcontainers DataSource fixture 有重复，后续可在 T4 或测试 support 中整理; request 空体保护可后续统一处理。
+- finishing-a-development-branch 判断: 保留当前分支，暂不开 PR / 不合并 / 不丢弃; Commit: `78e94e3`。
+- 人工干预和教训: 用户要求修复评审发现的 `401 Unauthorized` contract 问题; 教训是安全/认证状态码应按 SPEC 通用 API 约定写测试，不能只断言“被拒绝”。
+
 ## 2026-XX-XX HH:mm
 
 - Task 编号：
