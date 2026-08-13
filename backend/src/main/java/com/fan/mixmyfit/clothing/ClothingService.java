@@ -145,6 +145,36 @@ public class ClothingService {
     }
 
     @Transactional
+    public ClothingBatchResponse batch(String sessionId, ClothingBatchRequest request) {
+        Long userId = currentUsers.requireUserId(sessionId);
+        List<Long> clothingIds = request == null || request.clothingIds() == null
+                ? List.of()
+                : request.clothingIds().stream().distinct().toList();
+        List<Clothing> selected = clothingIds.stream()
+                .map(clothingId -> requireOwnedClothing(userId, clothingId))
+                .toList();
+        Category category = request != null && request.hasCategoryId()
+                ? resolveCategory(userId, request.categoryId())
+                : null;
+        List<ClothingTag> tagsToAdd = resolveTags(userId, request == null ? null : request.addTagIds());
+        List<Long> tagIdsToRemove = resolveTags(userId, request == null ? null : request.removeTagIds()).stream()
+                .map(ClothingTag::getClothingTagId)
+                .toList();
+
+        for (Clothing clothing : selected) {
+            Category nextCategory = request != null && request.hasCategoryId() ? category : clothing.getCategory();
+            String nextColor = request != null && request.hasColor() ? request.color() : clothing.getColor();
+            clothing.updateMetadata(nextCategory, clothing.getName(), nextColor);
+            if (request != null && request.seasons() != null) {
+                replaceSeasons(clothing, request.seasons());
+            }
+            addTags(clothing, tagsToAdd);
+            removeTags(clothing, tagIdsToRemove);
+        }
+        return new ClothingBatchResponse(selected.size());
+    }
+
+    @Transactional
     public void delete(String sessionId, Long clothingId) {
         Clothing clothing = requireOwnedClothing(sessionId, clothingId);
         clothes().delete(clothing);
@@ -243,6 +273,17 @@ public class ClothingService {
     }
 
     private void replaceTags(Long userId, Clothing clothing, List<Long> tagIds) {
+        List<ClothingTag> resolvedTags = resolveTags(userId, tagIds);
+        clothingTagLinks().deleteByClothingClothingId(clothing.getClothingId());
+        clothingTagLinks().saveAll(resolvedTags.stream()
+                .map(tag -> new ClothingTagLink(clothing, tag))
+                .toList());
+    }
+
+    private List<ClothingTag> resolveTags(Long userId, List<Long> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) {
+            return List.of();
+        }
         List<ClothingTag> resolvedTags = new ArrayList<>();
         for (Long tagId : tagIds.stream().distinct().toList()) {
             ClothingTag tag = clothingTags().findById(tagId).orElseThrow(ClothingService::notFound);
@@ -251,8 +292,36 @@ public class ClothingService {
             }
             resolvedTags.add(tag);
         }
+        return resolvedTags;
+    }
+
+    private void addTags(Clothing clothing, List<ClothingTag> tagsToAdd) {
+        if (tagsToAdd.isEmpty()) {
+            return;
+        }
+        List<Long> existingTagIds = clothingTagLinks()
+                .findByClothingClothingIdOrderByClothingTagLinkId(clothing.getClothingId())
+                .stream()
+                .map(link -> link.getClothingTag().getClothingTagId())
+                .toList();
+        clothingTagLinks().saveAll(tagsToAdd.stream()
+                .filter(tag -> !existingTagIds.contains(tag.getClothingTagId()))
+                .map(tag -> new ClothingTagLink(clothing, tag))
+                .toList());
+    }
+
+    private void removeTags(Clothing clothing, List<Long> tagIdsToRemove) {
+        if (tagIdsToRemove.isEmpty()) {
+            return;
+        }
+        List<ClothingTag> remainingTags = clothingTagLinks()
+                .findByClothingClothingIdOrderByClothingTagLinkId(clothing.getClothingId())
+                .stream()
+                .map(ClothingTagLink::getClothingTag)
+                .filter(tag -> !tagIdsToRemove.contains(tag.getClothingTagId()))
+                .toList();
         clothingTagLinks().deleteByClothingClothingId(clothing.getClothingId());
-        clothingTagLinks().saveAll(resolvedTags.stream()
+        clothingTagLinks().saveAll(remainingTags.stream()
                 .map(tag -> new ClothingTagLink(clothing, tag))
                 .toList());
     }

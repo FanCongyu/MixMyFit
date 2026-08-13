@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -292,6 +293,141 @@ class ClothingCrudEndpointTest {
                 .andExpect(jsonPath("$.count").value(1));
     }
 
+    @Test
+    void batchSettingCategoryMakesSelectedDraftClothingReady() throws Exception {
+        Clothing first = saveClothing(Clothing.draft(owner, "first.png", "first.png", "image/png", 8L), 131L);
+        Clothing second = saveClothing(Clothing.draft(owner, "second.png", "second.png", "image/png", 8L), 132L);
+        Category category = saveCategory(Category.custom(owner, "Layer"), 217L);
+
+        mvc.perform(post("/api/clothes/batch")
+                        .cookie(sessionCookie())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "clothingIds": [131, 132],
+                                  "categoryId": 217
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.updated").value(2));
+
+        assertThat(first.getCategory()).isEqualTo(category);
+        assertThat(first.getStatus().dbValue()).isEqualTo("ready");
+        assertThat(second.getCategory()).isEqualTo(category);
+        assertThat(second.getStatus().dbValue()).isEqualTo("ready");
+    }
+
+    @Test
+    void batchSettingColorOnlyAffectsSelectedCurrentUserClothing() throws Exception {
+        Category category = saveCategory(Category.custom(owner, "Layer"), 221L);
+        Clothing first = saveClothing(Clothing.ready(owner, category, "First", "blue", "first.png", "first.png", "image/png", 8L), 141L);
+        Clothing second = saveClothing(Clothing.ready(owner, category, "Second", "gray", "second.png", "second.png", "image/png", 8L), 142L);
+        Clothing unselected = saveClothing(Clothing.ready(owner, category, "Third", "green", "third.png", "third.png", "image/png", 8L), 143L);
+
+        mvc.perform(post("/api/clothes/batch")
+                        .cookie(sessionCookie())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "clothingIds": [141, 142],
+                                  "color": "navy"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.updated").value(2));
+
+        assertThat(first.getColor()).isEqualTo("navy");
+        assertThat(second.getColor()).isEqualTo("navy");
+        assertThat(unselected.getColor()).isEqualTo("green");
+    }
+
+    @Test
+    void batchSettingSeasonsReplacesSelectedClothingSeasons() throws Exception {
+        Category category = saveCategory(Category.custom(owner, "Layer"), 218L);
+        Clothing first = saveClothing(Clothing.ready(owner, category, "First", "blue", "first.png", "first.png", "image/png", 8L), 133L);
+        Clothing second = saveClothing(Clothing.ready(owner, category, "Second", "navy", "second.png", "second.png", "image/png", 8L), 134L);
+        seasons.add(new ClothingSeason(first, com.fan.mixmyfit.domain.Season.SPRING));
+        seasons.add(new ClothingSeason(second, com.fan.mixmyfit.domain.Season.AUTUMN));
+
+        mvc.perform(post("/api/clothes/batch")
+                        .cookie(sessionCookie())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "clothingIds": [133, 134],
+                                  "seasons": ["summer", "winter"]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.updated").value(2));
+
+        assertThat(seasonValuesFor(first)).containsExactly("summer", "winter");
+        assertThat(seasonValuesFor(second)).containsExactly("summer", "winter");
+    }
+
+    @Test
+    void batchAddingAndRemovingTagsOnlyAffectsSelectedCurrentUserClothing() throws Exception {
+        Category category = saveCategory(Category.custom(owner, "Layer"), 219L);
+        ClothingTag office = saveTag(new ClothingTag(owner, "Office"), 320L);
+        ClothingTag casual = saveTag(new ClothingTag(owner, "Casual"), 321L);
+        ClothingTag otherTag = saveTag(new ClothingTag(anotherUser, "Office"), 322L);
+        Clothing first = saveClothing(Clothing.ready(owner, category, "First", "blue", "first.png", "first.png", "image/png", 8L), 135L);
+        Clothing second = saveClothing(Clothing.ready(owner, category, "Second", "navy", "second.png", "second.png", "image/png", 8L), 136L);
+        Clothing unselected = saveClothing(Clothing.ready(owner, category, "Third", "gray", "third.png", "third.png", "image/png", 8L), 137L);
+        Clothing otherUsersClothing = saveClothing(Clothing.ready(anotherUser, category, "Other", "red", "other.png", "other.png", "image/png", 8L), 138L);
+        tagLinks.add(new ClothingTagLink(first, casual));
+        tagLinks.add(new ClothingTagLink(second, casual));
+        tagLinks.add(new ClothingTagLink(unselected, casual));
+        tagLinks.add(new ClothingTagLink(otherUsersClothing, otherTag));
+
+        mvc.perform(post("/api/clothes/batch")
+                        .cookie(sessionCookie())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "clothingIds": [135, 136],
+                                  "addTagIds": [320],
+                                  "removeTagIds": [321]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.updated").value(2));
+
+        assertThat(tagIdsFor(first)).containsExactly(320L);
+        assertThat(tagIdsFor(second)).containsExactly(320L);
+        assertThat(tagIdsFor(unselected)).containsExactly(321L);
+        assertThat(tagIdsFor(otherUsersClothing)).containsExactly(322L);
+    }
+
+    @Test
+    void batchRejectsMixedUserClothingIdsWithoutMutatingAnyData() throws Exception {
+        Clothing ownerClothing = saveClothing(Clothing.draft(owner, "owner.png", "owner.png", "image/png", 8L), 139L);
+        Clothing otherClothing = saveClothing(Clothing.draft(anotherUser, "other.png", "other.png", "image/png", 8L), 140L);
+        Category category = saveCategory(Category.custom(owner, "Layer"), 220L);
+
+        mvc.perform(post("/api/clothes/batch")
+                        .cookie(sessionCookie())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "clothingIds": [139, 140],
+                                  "categoryId": 220,
+                                  "color": "blue",
+                                  "seasons": ["spring"]
+                                }
+                                """))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("RESOURCE_NOT_FOUND"));
+
+        assertThat(ownerClothing.getCategory()).isNull();
+        assertThat(ownerClothing.getStatus().dbValue()).isEqualTo("draft");
+        assertThat(ownerClothing.getColor()).isNull();
+        assertThat(otherClothing.getCategory()).isNull();
+        assertThat(otherClothing.getStatus().dbValue()).isEqualTo("draft");
+        assertThat(seasons).isEmpty();
+        assertThat(category.getName()).isEqualTo("Layer");
+    }
+
     private Clothing saveClothing(Clothing clothing, Long clothingId) {
         setId(clothing, "clothingId", clothingId);
         clothes.add(clothing);
@@ -308,6 +444,20 @@ class ClothingCrudEndpointTest {
         setId(tag, "clothingTagId", tagId);
         tags.add(tag);
         return tag;
+    }
+
+    private List<String> seasonValuesFor(Clothing clothing) {
+        return seasons.stream()
+                .filter(season -> season.getClothing().equals(clothing))
+                .map(season -> season.getSeason().dbValue())
+                .toList();
+    }
+
+    private List<Long> tagIdsFor(Clothing clothing) {
+        return tagLinks.stream()
+                .filter(link -> link.getClothing().equals(clothing))
+                .map(link -> link.getClothingTag().getClothingTagId())
+                .toList();
     }
 
     private ClothingRepository clothingRepository() {

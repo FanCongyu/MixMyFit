@@ -69,6 +69,13 @@ public class ClothingController {
         return clothes.get(sessionId, clothingId);
     }
 
+    @PostMapping("/batch")
+    public ClothingBatchResponse batch(
+            @CookieValue(name = SessionCookieFactory.SESSION_COOKIE_NAME, required = false) String sessionId,
+            @RequestBody ClothingBatchRequest request) {
+        return clothes.batch(sessionId, request);
+    }
+
     @PatchMapping("/{clothingId}")
     public ClothingResponse update(
             @CookieValue(name = SessionCookieFactory.SESSION_COOKIE_NAME, required = false) String sessionId,

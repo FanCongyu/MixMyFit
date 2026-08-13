@@ -684,6 +684,23 @@
 
 ### T8：后端衣物批量操作
 
+**状态：** 已完成
+
+**分支 / worktree：** `task/08-clothing-batch`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-08-clothing-batch`
+
+**测试结果：**
+- TDD 红灯：`mvn test -Dtest=ClothingCrudEndpointTest` 初始失败，5 个 batch 用例因 `POST /api/clothes/batch` 返回 `405`。
+- Task 相关测试：`mvn test -Dtest=ClothingCrudEndpointTest` 通过；Tests run: 18, Failures: 0, Errors: 0, Skipped: 0。
+- 完整后端测试：`mvn test` 通过；Tests run: 59, Failures: 0, Errors: 0, Skipped: 0。
+
+**SPEC 合规检查：** 通过
+
+**代码质量检查：** 通过
+
+**完成分支决定：** 开 PR
+
+**Commit hash：** 待填写
+
 **目标：** 实现对选中衣物的批量品类、颜色、季节和标签操作。
 
 **依赖关系：** T7B。

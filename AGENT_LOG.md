@@ -148,6 +148,20 @@
 - finishing-a-development-branch 判断：开 PR；Task 相关测试和完整后端测试均通过，当前分支适合提交后创建 PR；Commit hash: 61be47d30f426e8c8639dc8a7491213a20eaa20f。
 - 人工干预和教训：用户要求先做快速收尾评审并修复评审问题；Codex 经用户授权启动 Docker Desktop 解除 Testcontainers 阻塞。教训是 API contract 中的默认排序必须有专门测试，且红灯测试数据要能区分错误排序和正确排序，避免假阳性。
 
+## 2026-08-13 18:01 +08:00
+
+- Task 编号和标题：T8 后端衣物批量操作。
+- 分支 / worktree：`task/08-clothing-batch`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-08-clothing-batch`; linked worktree。
+- 使用的 subagent：Codex。
+- TDD 红灯摘要：新增 `ClothingCrudEndpointTest` 的 batch 测试后，`mvn test -Dtest=ClothingCrudEndpointTest` 初始失败，5 个 batch 用例因 `POST /api/clothes/batch` 返回 `405`。
+- TDD 绿灯摘要：新增 `POST /api/clothes/batch`、批量请求/响应 DTO 和 service 逻辑，支持批量设置品类、颜色、季节，以及添加/移除衣物标签；所有衣物、品类和标签先完成当前用户归属校验再写入。
+- 重构摘要：复用现有 `resolveCategory`、`requireOwnedClothing`、`replaceSeasons`，抽出 `resolveTags`、`addTags`、`removeTags`，避免重复标签归属校验逻辑；未修改业务范围外代码。
+- 测试命令和结果：`mvn test -Dtest=ClothingCrudEndpointTest` 通过，Tests run: 18, Failures: 0, Errors: 0, Skipped: 0；完整后端 `mvn test` 通过，Tests run: 59, Failures: 0, Errors: 0, Skipped: 0。实际执行使用本机 `.m2\wrapper` 中 Maven 可执行文件。
+- SPEC / PLAN 合规检查结论：通过；只完成 T8，满足 `/api/clothes/batch` contract、批量品类/颜色/季节/标签操作、用户隔离和混入其他用户 clothing ID 拒绝要求；未写入真实凭据。
+- 代码质量检查结论：通过；Critical issues 无。Non-critical：后续可补空 `clothingIds` 行为、同一标签同时 add/remove 的明确约定，以及真实 JPA 集成测试。
+- finishing-a-development-branch 判断：开 PR；Task 相关测试和完整后端测试均通过，当前分支适合提交后创建 PR；Commit hash：待填写。
+- 人工干预和教训：用户要求快速收尾评审后再做文档收尾，且明确 commit hash 待填写不阻塞 PR、README 仅必要时更新。教训是 batch 写入应先完整校验全部归属再修改，避免混入非法 ID 时产生部分更新。
+
 ## 2026-XX-XX HH:mm
 
 - Task 编号：
