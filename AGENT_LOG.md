@@ -134,6 +134,20 @@
 - 人工干预和教训：用户要求快速收尾评审并明确 commit hash 待填写不阻塞 PR、README 仅必要时更新；教训是当 Docker/Testcontainers 不可用时，应保留不依赖 Docker 的核心行为测试，同时如实记录完整测试阻塞。
 - Commit hash：9da4aa3b4c9756af1e402e7ee2f27aeae3277cff。
 
+## 2026-08-13 17:40 +08:00
+
+- Task 编号和标题：T7B 后端待完善状态、分页、筛选与颜色复用。
+- 分支 / worktree：`task/07b-clothing-filtering`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-07b-clothing-filtering`; linked worktree。
+- 使用的 subagent：Codex。
+- TDD 红灯摘要：新增 `ClothingCrudEndpointTest` 的 T7B 测试后，`mvn test -Dtest=ClothingCrudEndpointTest` 初始失败 6 个，分别暴露 `status` 筛选未生效、分页未生效、组合筛选未生效，以及 `/api/clothes/colors`、`/api/clothes/draft-count` endpoint 缺失；收尾评审发现默认排序不符合 `created_at desc`，补充排序测试并确认其先失败于返回 `clothingId` 升序。
+- TDD 绿灯摘要：扩展 `GET /api/clothes` 查询参数，新增颜色复用和待完善计数 endpoint，实现当前用户内的 `categoryId`、`status`、`color`、`season`、`tagIds` 组合筛选、分页和 `createdAt desc` 默认排序。
+- 重构摘要：新增 `DraftCountResponse`；`ClothingService` 增加小型 matcher helper；未改动 README、前端、批量操作、搭配或其他 task 范围。
+- 测试命令和结果：`mvn test -Dtest=ClothingCrudEndpointTest` 红灯确认失败后，最终通过，`Tests run: 13, Failures: 0, Errors: 0, Skipped: 0`；完整后端 `mvn test` 在启动 Docker Desktop 后通过，`Tests run: 54, Failures: 0, Errors: 0, Skipped: 0`。实际执行使用本机 `.m2\wrapper` 中 Maven 可执行文件。
+- SPEC / PLAN 合规检查结论：通过；只完成 T7B，满足列表分页、筛选、draft/ready 待完善状态、当前用户待完善计数、当前用户去重颜色复用、默认 `created_at desc` 排序和用户隔离要求；未写入真实凭据。
+- 代码质量检查结论：通过；Critical issues 无。Non-critical：当前筛选为 service 内存过滤，后续数据量增大时可下推到 repository/DB；非法 `status` / `season` 后续可统一为明确 `400 Bad Request`。
+- finishing-a-development-branch 判断：开 PR；Task 相关测试和完整后端测试均通过，当前分支适合提交后创建 PR；Commit hash: 61be47d30f426e8c8639dc8a7491213a20eaa20f。
+- 人工干预和教训：用户要求先做快速收尾评审并修复评审问题；Codex 经用户授权启动 Docker Desktop 解除 Testcontainers 阻塞。教训是 API contract 中的默认排序必须有专门测试，且红灯测试数据要能区分错误排序和正确排序，避免假阳性。
+
 ## 2026-XX-XX HH:mm
 
 - Task 编号：
