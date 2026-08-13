@@ -19,10 +19,30 @@ function clothingList(items: unknown[] = []): unknown {
   }
 }
 
-function stubClothingPage(initialItems: unknown[] = []): ReturnType<typeof vi.fn> {
-  const fetchMock = vi.fn((path: string) => {
+function sampleClothingItem(clothingId: number, name: string): unknown {
+  return {
+    clothingId,
+    status: 'draft',
+    name,
+    color: '白色',
+    category: null,
+    seasons: [],
+    tags: [],
+    imageUrl: `/api/clothes/${clothingId}/image`,
+    originalFilename: `${name}.png`,
+    contentType: 'image/png',
+    fileSize: 12
+  }
+}
+
+function stubClothingPage(
+  initialItems: unknown[] = [],
+  options: { draftCounts?: number[] } = {}
+): ReturnType<typeof vi.fn> {
+  const draftCounts = [...(options.draftCounts ?? [3])]
+  const fetchMock = vi.fn((path: string, init?: RequestInit) => {
     if (path === '/api/clothes/draft-count') {
-      return Promise.resolve(jsonResponse({ count: 3 }))
+      return Promise.resolve(jsonResponse({ count: draftCounts.shift() ?? 3 }))
     }
     if (path === '/api/categories') {
       return Promise.resolve(jsonResponse([
@@ -31,11 +51,18 @@ function stubClothingPage(initialItems: unknown[] = []): ReturnType<typeof vi.fn
     }
     if (path === '/api/clothing-tags') {
       return Promise.resolve(jsonResponse([
-        { tagId: 11, name: '通勤', kind: 'clothing' }
+        { tagId: 11, name: '通勤', kind: 'clothing' },
+        { tagId: 12, name: '旅行', kind: 'clothing' }
       ]))
     }
     if (path === '/api/clothes/colors') {
       return Promise.resolve(jsonResponse(['白色']))
+    }
+    if (path === '/api/clothes/batch') {
+      return Promise.resolve(jsonResponse({ updated: 2 }))
+    }
+    if (path === '/api/clothes' && init?.method === 'POST') {
+      return Promise.resolve(jsonResponse({ clothingId: 99 }))
     }
     if (path.startsWith('/api/clothes')) {
       return Promise.resolve(jsonResponse(clothingList(initialItems)))
@@ -99,5 +126,122 @@ describe('ClothingListView', () => {
     render(App)
 
     expect(await screen.findByText('未命名衣物')).toBeTruthy()
+  })
+
+  it('enables the batch toolbar after selecting multiple clothing items', async () => {
+    stubClothingPage([
+      sampleClothingItem(41, '白衬衫'),
+      sampleClothingItem(42, '黑外套')
+    ])
+    window.history.pushState({}, '', '/clothes')
+
+    render(App)
+
+    await fireEvent.click(await screen.findByLabelText('选择 白衬衫'))
+    await fireEvent.click(await screen.findByLabelText('选择 黑外套'))
+
+    expect(screen.getByRole('toolbar', { name: '批量操作' })).toBeTruthy()
+    expect(screen.getByText('已选择 2 件')).toBeTruthy()
+    expect((screen.getByLabelText('批量品类') as HTMLSelectElement).disabled).toBe(false)
+  })
+
+  it('sends selected clothing ids when batch category is applied', async () => {
+    const fetchMock = stubClothingPage([
+      sampleClothingItem(41, '白衬衫'),
+      sampleClothingItem(42, '黑外套')
+    ])
+    window.history.pushState({}, '', '/clothes')
+
+    render(App)
+
+    await fireEvent.click(await screen.findByLabelText('选择 白衬衫'))
+    await fireEvent.click(await screen.findByLabelText('选择 黑外套'))
+    await fireEvent.update(screen.getByLabelText('批量品类'), '1')
+    await fireEvent.click(screen.getByRole('button', { name: '批量设置品类' }))
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/api/clothes/batch', expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          clothingIds: [41, 42],
+          categoryId: 1
+        })
+      }))
+    })
+  })
+
+  it('sends selected clothing ids when batch color and season are applied', async () => {
+    const fetchMock = stubClothingPage([
+      sampleClothingItem(41, '白衬衫'),
+      sampleClothingItem(42, '黑外套')
+    ])
+    window.history.pushState({}, '', '/clothes')
+
+    render(App)
+
+    await fireEvent.click(await screen.findByLabelText('选择 白衬衫'))
+    await fireEvent.click(await screen.findByLabelText('选择 黑外套'))
+    await fireEvent.update(screen.getByLabelText('批量颜色'), '白色')
+    await fireEvent.update(screen.getByLabelText('批量季节'), 'spring')
+    await fireEvent.click(screen.getByRole('button', { name: '批量设置属性' }))
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/api/clothes/batch', expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          clothingIds: [41, 42],
+          color: '白色',
+          seasons: ['spring']
+        })
+      }))
+    })
+  })
+
+  it('sends selected clothing ids when batch tags are added and removed', async () => {
+    const fetchMock = stubClothingPage([
+      sampleClothingItem(41, '白衬衫'),
+      sampleClothingItem(42, '黑外套')
+    ])
+    window.history.pushState({}, '', '/clothes')
+
+    render(App)
+
+    await fireEvent.click(await screen.findByLabelText('选择 白衬衫'))
+    await fireEvent.click(await screen.findByLabelText('选择 黑外套'))
+    await fireEvent.update(screen.getByLabelText('批量添加标签'), '11')
+    await fireEvent.update(screen.getByLabelText('批量移除标签'), '12')
+    await fireEvent.click(screen.getByRole('button', { name: '批量更新标签' }))
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith('/api/clothes/batch', expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          clothingIds: [41, 42],
+          addTagIds: [11],
+          removeTagIds: [12]
+        })
+      }))
+    })
+  })
+
+  it('shows created count and refreshes draft count after batch upload succeeds', async () => {
+    stubClothingPage([], { draftCounts: [3, 5] })
+    window.history.pushState({}, '', '/clothes')
+
+    render(App)
+
+    const files = [
+      new File(['shirt'], 'shirt.png', { type: 'image/png' }),
+      new File(['coat'], 'coat.png', { type: 'image/png' })
+    ]
+    const input = await screen.findByLabelText('批量上传图片')
+    Object.defineProperty(input, 'files', {
+      configurable: true,
+      value: files
+    })
+    await fireEvent(input, new Event('change', { bubbles: true }))
+
+    expect(await screen.findByText('已创建 2 件衣物')).toBeTruthy()
+    expect(await screen.findByText('5 件待完善')).toBeTruthy()
   })
 })

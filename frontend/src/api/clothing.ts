@@ -49,8 +49,30 @@ export type DraftCountResponse = {
   count: number
 }
 
-async function requestJson<T>(path: string): Promise<T> {
-  const response = await apiRequest(path)
+export type ClothingUploadResponse = {
+  clothingId: number
+  status?: ClothingStatus
+  imageUrl?: string
+  originalFilename?: string
+  contentType?: string
+  fileSize?: number
+}
+
+export type ClothingBatchUpdateRequest = {
+  clothingIds: number[]
+  categoryId?: number
+  color?: string
+  seasons?: string[]
+  addTagIds?: number[]
+  removeTagIds?: number[]
+}
+
+export type ClothingBatchResponse = {
+  updated: number
+}
+
+async function requestJson<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const response = await apiRequest(path, init)
 
   if (!response.ok) {
     throw new Error('Request failed.')
@@ -97,4 +119,24 @@ export function listClothingTags(): Promise<ClothingTag[]> {
 
 export function listClothingColors(): Promise<string[]> {
   return requestJson<string[]>('/clothes/colors')
+}
+
+export function uploadClothing(file: File): Promise<ClothingUploadResponse> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  return requestJson<ClothingUploadResponse>('/clothes', {
+    method: 'POST',
+    body: formData
+  })
+}
+
+export function batchUpdateClothes(
+  request: ClothingBatchUpdateRequest
+): Promise<ClothingBatchResponse> {
+  return requestJson<ClothingBatchResponse>('/clothes/batch', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request)
+  })
 }

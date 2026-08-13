@@ -1028,6 +1028,20 @@
 
 ### T13B：前端批量上传反馈与批量操作 UI
 
+**状态：** 已完成
+
+**分支 / worktree：** `task/13b-frontend-clothing-batch`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-13b-frontend-clothing-batch`
+
+**测试结果：** `npm test -- --run src/views/clothing/__tests__/ClothingListView.test.ts` 通过，Test Files: 1 passed, Tests: 8 passed；`npm run build` 通过；`npm test -- --run` 通过，Test Files: 7 passed, Tests: 18 passed。
+
+**SPEC 合规检查：** 通过
+
+**代码质量检查：** 通过
+
+**完成分支决定：** 开 PR
+
+**Commit hash：** 待填写
+
 **目标：** 实现批量图片上传反馈，以及多选后的批量元数据/标签操作。
 
 **依赖关系：** T8、T13A。
