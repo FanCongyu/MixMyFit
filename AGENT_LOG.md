@@ -190,7 +190,7 @@
 - finishing-a-development-branch 判断：开 PR；当前分支测试通过，适合提交后创建 PR；Commit hash 8da27c1a4b3fe7c5b58fb94b424e3a0aedc0e508。
 - 人工干预和教训：用户要求先做快速收尾评审再文档收尾，并明确 commit hash 待填写不阻塞 PR、README 仅必要时更新。教训是评审 staged/unstaged diff 时要同时查看 `git diff` 和 `git diff --cached`，避免漏看已 staged 新文件。
 
-## 2026-XX-XX HH:mm
+## 2026-08-13 21:02 +08:00
 
 - Task 编号和标题：T11 前端基线、Open Design 方向与 API Client。
 - 分支 / worktree：`task/11-frontend-baseline`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-11-frontend-baseline`; linked worktree。
@@ -204,6 +204,20 @@
 - finishing-a-development-branch 判断：开 PR；Task 相关前端测试和构建通过，顶层 `make test` 仅受本机 PATH 限制。
 - 人工干预和教训：用户要求快速收尾评审后再做文档收尾，并明确 commit hash 待填写不作为 PR 阻塞。教训是前端 task 开始前要先确认 `node_modules` 是否存在；评审当前 diff 时要同时查看 staged、unstaged 和 untracked 文件。
 - Commit hash：56e4f7f5c453609bce66f02188fa82873051575a。
+
+## 2026-08-13 22:23 +08:00
+
+- Task 编号和标题：T12 前端认证与个人资料页面。
+- 分支 / worktree：`task/12-frontend-auth`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-12-frontend-auth`; linked worktree。
+- 使用的 subagent：Codex。
+- TDD 红灯摘要：新增登录、注册、profile 和 auth store 测试后，首次 `npm test -- --run` 因 `vitest` 未安装未进入断言；安装依赖后红灯符合预期，缺少 `auth` store、`LoginView`、`RegisterView`、`ProfileView` 导致 4 个新测试套件失败。
+- TDD 绿灯摘要：新增最小 auth store，封装注册、登录、退出、profile 读取、昵称修改和密码修改 API；新增登录/注册/profile view；`App` 按 `/login`、`/register`、`/profile` 渲染对应页面并保留 `/app` placeholder。
+- 重构摘要：测试补充 cleanup 和异步跳转等待；样式集中在 `base.css`，沿用 T11 克制工具型 UI 方向；未引入新依赖，未实现衣物、搭配或其他 task。
+- 测试命令和结果：`npm test -- --run` 最终通过，Test Files: 6 passed, Tests: 10 passed；`npm run build` 通过；`npm ci` 后重新执行 `npm run build` 和 `npm test -- --run` 均通过；后端 `mvn test` 使用本机 `.m2\wrapper` 中 Maven 可执行文件通过，Tests run: 72, Failures: 0, Errors: 0, Skipped: 0；`make test` 未直接运行，原因是当前 PowerShell 环境中 `make` 不在 PATH，已执行等价命令。
+- SPEC / PLAN 合规检查结论：通过；只完成 T12，满足 Cookie 会话前端使用、注册/登录/退出、个人资料 username/nickname 渲染、昵称修改、密码修改成功/错误状态和密码不进日志要求；未写入真实凭据。
+- 代码质量检查结论：通过；Critical issues 无。Non-critical：提交前需整理 staged/unstaged 状态；`npm ci` 报现有依赖审计项；README 需要更新当前状态、目录结构、测试覆盖和已知限制。
+- finishing-a-development-branch 判断：开 PR；Task 相关测试、前端构建和后端回归测试均通过；Commit：02f2b495a4f1df4394033333ca4aa86bdd86369f。
+- 人工干预和教训：用户要求快速收尾评审后再做文档收尾，并明确 commit hash 待填写不阻塞 PR、README 仅必要时更新。教训是评审当前 diff 时必须同时查看 `git diff` 和 `git diff --cached`，否则会漏掉已 staged 新文件；前端红灯前也要先确认依赖是否已安装。
 
 ## 2026-XX-XX HH:mm
 

@@ -13,8 +13,23 @@ const authenticatedPlaceholderRoute: AppRoute = {
   title: '衣橱工作台'
 }
 
+const routes: AppRoute[] = [
+  defaultRoute,
+  authenticatedPlaceholderRoute,
+  {
+    path: '/login',
+    title: 'Log in'
+  },
+  {
+    path: '/register',
+    title: 'Create account'
+  },
+  {
+    path: '/profile',
+    title: 'Profile'
+  }
+]
+
 export function resolveRoute(pathname: string = window.location.pathname): AppRoute {
-  return pathname === authenticatedPlaceholderRoute.path
-    ? authenticatedPlaceholderRoute
-    : defaultRoute
+  return routes.find((route) => route.path === pathname) || defaultRoute
 }

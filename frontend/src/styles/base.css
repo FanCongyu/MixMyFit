@@ -27,3 +27,78 @@ body {
   letter-spacing: 0;
   margin: 0;
 }
+
+.auth-panel,
+.profile-panel {
+  max-width: 520px;
+}
+
+.profile-panel__content {
+  display: grid;
+  gap: 28px;
+  margin-top: 24px;
+}
+
+.form-stack {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.form-stack label {
+  display: grid;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.form-stack input {
+  border: 1px solid #c8d0d9;
+  border-radius: 6px;
+  font: inherit;
+  padding: 10px 12px;
+}
+
+.form-stack button,
+.button-secondary {
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 10px 14px;
+}
+
+.form-stack button {
+  background: #175cd3;
+  color: #ffffff;
+}
+
+.button-secondary {
+  background: #e7eaee;
+  color: #1f2933;
+  width: fit-content;
+}
+
+.form-message {
+  color: #17663a;
+  margin: 0;
+}
+
+.form-message--error {
+  color: #b42318;
+}
+
+dl {
+  margin: 0;
+}
+
+dt {
+  color: #526070;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+dd {
+  font-size: 1.125rem;
+  margin: 4px 0 0;
+}
