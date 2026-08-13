@@ -216,7 +216,7 @@
 - 测试命令和结果：`npm test -- --run` 最终通过，Test Files: 6 passed, Tests: 10 passed；`npm run build` 通过；`npm ci` 后重新执行 `npm run build` 和 `npm test -- --run` 均通过；后端 `mvn test` 使用本机 `.m2\wrapper` 中 Maven 可执行文件通过，Tests run: 72, Failures: 0, Errors: 0, Skipped: 0；`make test` 未直接运行，原因是当前 PowerShell 环境中 `make` 不在 PATH，已执行等价命令。
 - SPEC / PLAN 合规检查结论：通过；只完成 T12，满足 Cookie 会话前端使用、注册/登录/退出、个人资料 username/nickname 渲染、昵称修改、密码修改成功/错误状态和密码不进日志要求；未写入真实凭据。
 - 代码质量检查结论：通过；Critical issues 无。Non-critical：提交前需整理 staged/unstaged 状态；`npm ci` 报现有依赖审计项；README 需要更新当前状态、目录结构、测试覆盖和已知限制。
-- finishing-a-development-branch 判断：开 PR；Task 相关测试、前端构建和后端回归测试均通过；Commit：待填写。
+- finishing-a-development-branch 判断：开 PR；Task 相关测试、前端构建和后端回归测试均通过；Commit：02f2b495a4f1df4394033333ca4aa86bdd86369f。
 - 人工干预和教训：用户要求快速收尾评审后再做文档收尾，并明确 commit hash 待填写不阻塞 PR、README 仅必要时更新。教训是评审当前 diff 时必须同时查看 `git diff` 和 `git diff --cached`，否则会漏掉已 staged 新文件；前端红灯前也要先确认依赖是否已安装。
 
 ## 2026-XX-XX HH:mm
