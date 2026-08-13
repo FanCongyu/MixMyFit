@@ -216,8 +216,22 @@
 - 测试命令和结果：`npm test -- --run` 最终通过，Test Files: 6 passed, Tests: 10 passed；`npm run build` 通过；`npm ci` 后重新执行 `npm run build` 和 `npm test -- --run` 均通过；后端 `mvn test` 使用本机 `.m2\wrapper` 中 Maven 可执行文件通过，Tests run: 72, Failures: 0, Errors: 0, Skipped: 0；`make test` 未直接运行，原因是当前 PowerShell 环境中 `make` 不在 PATH，已执行等价命令。
 - SPEC / PLAN 合规检查结论：通过；只完成 T12，满足 Cookie 会话前端使用、注册/登录/退出、个人资料 username/nickname 渲染、昵称修改、密码修改成功/错误状态和密码不进日志要求；未写入真实凭据。
 - 代码质量检查结论：通过；Critical issues 无。Non-critical：提交前需整理 staged/unstaged 状态；`npm ci` 报现有依赖审计项；README 需要更新当前状态、目录结构、测试覆盖和已知限制。
-- finishing-a-development-branch 判断：开 PR；Task 相关测试、前端构建和后端回归测试均通过；Commit：02f2b495a4f1df4394033333ca4aa86bdd86369f。
+- finishing-a-development-branch 判断：开 PR；Task 相关测试、前端构建和后端回归测试均通过；Commit hash：02f2b495a4f1df4394033333ca4aa86bdd86369f。
 - 人工干预和教训：用户要求快速收尾评审后再做文档收尾，并明确 commit hash 待填写不阻塞 PR、README 仅必要时更新。教训是评审当前 diff 时必须同时查看 `git diff` 和 `git diff --cached`，否则会漏掉已 staged 新文件；前端红灯前也要先确认依赖是否已安装。
+
+## 2026-08-13 22:51 +08:00
+
+- Task 编号和标题：T13A 前端衣物库列表、筛选与待完善状态 UI。
+- 分支 / worktree：`task/13a-frontend-clothing-list`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-13a-frontend-clothing-list`; linked worktree。
+- 使用的 subagent：Codex。
+- TDD 红灯摘要：新增 `ClothingListView.test.ts` 后，首次 `npm test -- --run src/views/clothing/__tests__/ClothingListView.test.ts` 因 `vitest` 未安装未进入断言；执行 `npm ci` 后确认红灯，3 个测试因 `/clothes` 未渲染衣物列表 UI、缺少状态筛选和 fallback 名称失败。
+- TDD 绿灯摘要：新增 `frontend/src/api/clothing.ts`、衣物列表页面、筛选组件和衣物卡片组件；`App` 接入 `/clothes` 路由；页面从衣物列表、待完善计数、品类、颜色和衣物标签 API 加载数据。
+- 重构摘要：将衣物卡片与筛选条拆成独立组件；样式集中补入 `base.css`，使用固定图片比例、`object-fit` 和响应式网格；修正测试事件为 `fireEvent.update()` 消除测试警告；未实现批量上传、多选或批量操作。
+- 测试命令和结果：`npm test -- --run src/views/clothing/__tests__/ClothingListView.test.ts` 红灯确认后最终通过，Test Files: 1 passed, Tests: 3 passed；`npm run build` 通过；`npm test -- --run` 通过，Test Files: 7 passed, Tests: 13 passed；使用本机 `.m2\wrapper` 中 Maven 可执行文件运行后端 `mvn test` 通过，Tests run: 72, Failures: 0, Errors: 0, Skipped: 0；`make test` 未直接运行，原因是当前 PowerShell 环境中 `make` 不在 PATH。
+- SPEC / PLAN 合规检查结论：通过；只完成 T13A，满足衣物列表、筛选控件、待完善标识、待完善数量、受控图片展示和 API contract；未实现 T13B 的批量上传、多选或批量操作；未写入真实凭据。
+- 代码质量检查结论：通过；Critical issues 无。Non-critical：可后续补充筛选选项加载失败处理、品类/颜色/季节/标签查询参数测试，以及多标签筛选与后端 contract 的集成验证。
+- finishing-a-development-branch 判断：开 PR；Task 相关测试、前端构建、前端全量测试和后端回归测试均通过；Commit hash：9f232b6b120e6e62c31c6adc1ddbffc6b4b7f79c 。
+- 人工干预和教训：用户要求先做快速收尾评审，再仅修改 `AGENT_LOG.md`、`PLAN.md` 和必要时的 README；README 经评估无需更新。教训是前端 task 红灯前要先确认依赖安装状态，且评审当前 diff 时要把 untracked 新文件也纳入检查。
 
 ## 2026-XX-XX HH:mm
 

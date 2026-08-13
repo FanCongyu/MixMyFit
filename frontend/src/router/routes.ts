@@ -17,6 +17,10 @@ const routes: AppRoute[] = [
   defaultRoute,
   authenticatedPlaceholderRoute,
   {
+    path: '/clothes',
+    title: '衣物库'
+  },
+  {
     path: '/login',
     title: 'Log in'
   },
