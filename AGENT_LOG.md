@@ -132,7 +132,7 @@
 - 代码质量检查结论：通过；Critical issues 无；non-critical 建议包括后续补真实 DB 集成验证、统一非法 season 的 400 错误处理，以及后续扩展时拆分 `ClothingService` metadata helper。
 - finishing-a-development-branch 判断：开 PR；当前分支适合提交后创建 PR，但 CI / 本地 Docker 可用环境需复跑完整 Testcontainers 测试。
 - 人工干预和教训：用户要求快速收尾评审并明确 commit hash 待填写不阻塞 PR、README 仅必要时更新；教训是当 Docker/Testcontainers 不可用时，应保留不依赖 Docker 的核心行为测试，同时如实记录完整测试阻塞。
-- Commit hash：待填写。
+- Commit hash：9da4aa3b4c9756af1e402e7ee2f27aeae3277cff。
 
 ## 2026-XX-XX HH:mm
 
