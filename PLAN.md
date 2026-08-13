@@ -871,7 +871,7 @@
 
 **完成分支决定：** 开 PR
 
-**Commit hash：** 待填写
+**Commit hash：** 56e4f7f5c453609bce66f02188fa82873051575a
 
 **目标：** 建立 Vue 应用结构、API client、路由壳和 Open Design 实现方向。
 

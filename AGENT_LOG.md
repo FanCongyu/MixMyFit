@@ -203,7 +203,7 @@
 - 代码质量检查结论：通过；Critical issues 无。Non-critical：后续可规范 `apiRequest('profile')` 这类无前导斜杠输入，补充错误响应解析，并将 dynamic import 测试改回静态 import。
 - finishing-a-development-branch 判断：开 PR；Task 相关前端测试和构建通过，顶层 `make test` 仅受本机 PATH 限制。
 - 人工干预和教训：用户要求快速收尾评审后再做文档收尾，并明确 commit hash 待填写不作为 PR 阻塞。教训是前端 task 开始前要先确认 `node_modules` 是否存在；评审当前 diff 时要同时查看 staged、unstaged 和 untracked 文件。
-- Commit hash：待填写。
+- Commit hash：56e4f7f5c453609bce66f02188fa82873051575a。
 
 ## 2026-XX-XX HH:mm
 
