@@ -6,7 +6,7 @@ MixMyFit 是一个个人衣橱搭配管理 Web 应用，面向希望数字化管
 
 用户可以上传自己的衣物图片，按品类、颜色、季节和标签管理衣物，并在搭配编辑器中组合、预览、保存和复用穿搭方案。项目目标是减少用户反复试穿或手工拼图的成本，让用户能基于自己的真实衣物图片完成搭配规划。
 
-本项目是 AI4SE 期末项目 B（非 harness 应用类项目）。当前已完成 SPEC、PLAN、冷启动验证、T1 项目骨架、T2A 数据库迁移验证、T2B JPA/Repository 映射验证和 T3A 后端认证会话 API；尚未进入个人资料、衣物、搭配、Docker、CI 或部署实现。
+本项目是 AI4SE 期末项目 B（非 harness 应用类项目）。当前已完成 SPEC、PLAN、冷启动验证、T1 项目骨架、T2A 数据库迁移验证、T2B JPA/Repository 映射验证、T3A 后端认证会话 API 和 T11 前端基线；尚未进入个人资料、衣物、搭配、Docker、CI 或部署实现。
 
 ## 目标用户
 
@@ -60,6 +60,7 @@ SPEC 阶段确定的 MVP 功能包括：
 - [x] 创建后端 MySQL schema migration 并用 Testcontainers 验证
 - [x] 创建后端 JPA 领域对象、枚举转换和 Repository 映射验证
 - [x] 实现后端注册、登录、退出和 HttpOnly Cookie 会话
+- [x] 建立前端应用壳、placeholder route 和 Cookie credentials API client
 - [ ] 实现核心功能
 - [ ] 配置测试与 CI
 - [ ] 完成部署与分发
@@ -110,10 +111,13 @@ SPEC 阶段确定的 MVP 功能包括：
 │   ├── vite.config.ts
 │   ├── tsconfig.json
 │   └── src/
+│       ├── api/
+│       ├── router/
+│       ├── stores/
+│       ├── styles/
 │       ├── App.vue
 │       ├── App.test.ts
 │       ├── main.ts
-│       ├── styles.css
 │       └── vue-shims.d.ts
 ├── docs/
 │   ├── cold-start-validation.md
@@ -127,7 +131,7 @@ SPEC 阶段确定的 MVP 功能包括：
 
 ## 安装与运行
 
-当前已有最小项目骨架、数据库迁移、JPA/Repository 映射和后端认证 API。前端仍没有业务功能页面。
+当前已有最小项目骨架、数据库迁移、JPA/Repository 映射、后端认证 API 和前端基线。前端仅包含应用壳、已登录占位 route 和 API client，仍没有业务功能页面。
 
 后端测试命令：
 
@@ -157,7 +161,11 @@ make test
 - 后端数据库：Flyway 可在 Testcontainers MySQL 上干净执行 `V1__initial_schema.sql`，并验证必需表、关键字段、唯一约束、枚举约束和跨用户归属约束。
 - 后端 Repository：JPA Entity 与 Spring Data Repository 可在 Testcontainers MySQL 上保存和读取核心对象，并验证 draft 衣物、标签唯一约束和 `outfit_items` 外键约束。
 - 后端认证：`POST /api/auth/register`、`POST /api/auth/login`、`POST /api/auth/logout`，覆盖 BCrypt 密码哈希、重复用户名、统一登录失败信息、`MMF_SESSION` HttpOnly Cookie、7 天过期、`SameSite=Lax` 和登出清理。
-- 前端：Vue 应用壳渲染 `MixMyFit`。
+- 前端：Vue 应用壳渲染 `MixMyFit`，`/app` 渲染已登录应用壳占位 route，API client 默认使用 Cookie credentials。
+
+## 前端 Open Design 方向
+
+T11 前端基线采用面向衣橱管理工具的 Open Design 方向：第一屏直接进入应用壳，不做营销式 landing page；整体以安静、实用、可扫描的工作台体验为目标。后续 UI 应延续克制的中性色底、清晰层级、稳定尺寸控件和受控图片容器，并通过 `object-fit`、固定展示区域和懒加载约束衣物图片展示。当前仅记录设计方向和基础结构，不表示最终业务 UI 已完成。
 
 后续任务会逐步加入个人资料、衣物、搭配、E2E 和 CI 测试。
 
@@ -185,7 +193,7 @@ T3A 认证会话实现使用后端设置的 `MMF_SESSION` Cookie。Cookie 本地
 
 ## 已知限制
 
-- 当前已完成后端注册、登录和退出 API；尚未实现个人资料、修改密码、衣物管理、搭配编辑器或搭配方案功能。
+- 当前已完成后端注册、登录和退出 API，以及前端应用壳、placeholder route 和 API client；尚未实现个人资料、修改密码、衣物管理、搭配编辑器或搭配方案功能。
 - 已创建数据库迁移、JPA Entity、Repository 和认证 REST API；Docker 和 CI 文件尚未创建。
 - Docker、CI、部署和线上 URL 尚未完成。
 - 当前开发机 shell 中 `mvn` 和 `make` 不在 PATH；需要配置本地工具链后才能直接运行 `cd backend && mvn test` 和 `make test`。

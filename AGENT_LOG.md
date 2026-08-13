@@ -192,6 +192,21 @@
 
 ## 2026-XX-XX HH:mm
 
+- Task 编号和标题：T11 前端基线、Open Design 方向与 API Client。
+- 分支 / worktree：`task/11-frontend-baseline`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-11-frontend-baseline`; linked worktree。
+- 使用的 subagent：Codex。
+- TDD 红灯摘要：新增 `frontend/src/api/client.test.ts` 和扩展 `frontend/src/App.test.ts` 后，首次测试因 `vitest` 未安装未进入断言；执行 `npm ci` 后，`npm test -- --run` 红灯确认 API client 模块缺失，且 `/app` 未渲染 `衣橱工作台`。
+- TDD 绿灯摘要：新增最小 `apiRequest`，默认请求 `/api` 前缀并使用 `credentials: 'include'`；新增 `/app` placeholder route resolver；应用壳按当前路径渲染占位标题。
+- 重构摘要：将全局样式从 `frontend/src/styles.css` 移入 `frontend/src/styles/base.css`，创建 `api/`、`router/`、`stores/`、`styles/` 基线目录；README 仅记录必要的目录、测试和 Open Design 方向。
+- 测试命令和结果：`npm ci` 成功；`npm test -- --run` 通过，Test Files: 2 passed, Tests: 3 passed；`npm run build` 通过；`make test` 未执行成功，原因是当前 PowerShell 环境中 `make` 不在 PATH。
+- SPEC / PLAN 合规检查结论：通过；只完成 T11，未实现认证页面、衣物、搭配、后端或数据模型改动；未写入真实凭据。
+- 代码质量检查结论：通过；Critical issues 无。Non-critical：后续可规范 `apiRequest('profile')` 这类无前导斜杠输入，补充错误响应解析，并将 dynamic import 测试改回静态 import。
+- finishing-a-development-branch 判断：开 PR；Task 相关前端测试和构建通过，顶层 `make test` 仅受本机 PATH 限制。
+- 人工干预和教训：用户要求快速收尾评审后再做文档收尾，并明确 commit hash 待填写不作为 PR 阻塞。教训是前端 task 开始前要先确认 `node_modules` 是否存在；评审当前 diff 时要同时查看 staged、unstaged 和 untracked 文件。
+- Commit hash：56e4f7f5c453609bce66f02188fa82873051575a。
+
+## 2026-XX-XX HH:mm
+
 - Task 编号：
 - 使用技能：
 - 使用智能体：
