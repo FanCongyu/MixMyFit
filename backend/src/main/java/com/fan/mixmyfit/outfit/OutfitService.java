@@ -19,8 +19,10 @@ import com.fan.mixmyfit.domain.repository.OutfitTagLinkRepository;
 import com.fan.mixmyfit.domain.repository.OutfitTagRepository;
 import com.fan.mixmyfit.security.AccessDeniedException;
 import com.fan.mixmyfit.security.CurrentUserResolver;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,6 +81,78 @@ public class OutfitService {
         outfitItems().saveAll(createItems(outfit, user, requestedItems, clothing));
 
         return new OutfitCreateResponse(outfit.getOutfitId(), outfit.getTitle());
+    }
+
+    @Transactional(readOnly = true)
+    public OutfitDetailResponse detail(String sessionId, Long outfitId) {
+        Long userId = currentUsers.requireUserId(sessionId);
+        Outfit outfit = requireOwnedOutfit(userId, outfitId);
+        return detailResponse(outfit);
+    }
+
+    @Transactional(readOnly = true)
+    public OutfitListResponse list(String sessionId, int page, int size, String season, List<Long> tagIds) {
+        Long userId = currentUsers.requireUserId(sessionId);
+        int requestedPage = Math.max(page, 0);
+        int requestedSize = size <= 0 ? 20 : size;
+        Season requestedSeason = season == null || season.isBlank() ? null : Season.fromApiValue(season);
+        Set<Long> requestedTagIds = tagIds == null ? Set.of() : Set.copyOf(tagIds);
+
+        List<OutfitSummaryResponse> filtered = outfits().findAll().stream()
+                .filter(outfit -> outfit.getUser().getUserId().equals(userId))
+                .filter(outfit -> requestedSeason == null || hasSeason(outfit, requestedSeason))
+                .filter(outfit -> requestedTagIds.isEmpty() || hasAllTags(outfit, requestedTagIds))
+                .sorted(Comparator
+                        .comparing(Outfit::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(Outfit::getOutfitId, Comparator.nullsLast(Comparator.naturalOrder()))
+                        .reversed())
+                .map(this::summaryResponse)
+                .toList();
+
+        int fromIndex = Math.min(requestedPage * requestedSize, filtered.size());
+        int toIndex = Math.min(fromIndex + requestedSize, filtered.size());
+        return new OutfitListResponse(filtered.subList(fromIndex, toIndex), requestedPage, requestedSize, filtered.size());
+    }
+
+    @Transactional
+    public OutfitDetailResponse update(String sessionId, Long outfitId, OutfitCreateRequest request) {
+        Long userId = currentUsers.requireUserId(sessionId);
+        Outfit outfit = requireOwnedOutfit(userId, outfitId);
+        List<OutfitItemRequest> requestedItems = request == null || request.items() == null
+                ? List.of()
+                : request.items();
+        if (requestedItems.isEmpty()) {
+            throw invalid("Outfit must include at least one item");
+        }
+
+        User user = outfit.getUser();
+        List<Clothing> clothing = requestedItems.stream()
+                .map(item -> requireReadyOwnedClothing(userId, item.clothingId()))
+                .toList();
+        List<OutfitTag> tags = resolveTags(userId, request.tagIds());
+
+        outfit.update(titleOrDefault(request.title()), request.note());
+        outfitItems().deleteByOutfit(outfit);
+        outfitSeasons().deleteByOutfit(outfit);
+        outfitTagLinks().deleteByOutfit(outfit);
+        outfitSeasons().saveAll(resolveSeasons(request.seasons()).stream()
+                .map(itemSeason -> new OutfitSeason(outfit, itemSeason))
+                .toList());
+        outfitTagLinks().saveAll(tags.stream()
+                .map(tag -> new OutfitTagLink(outfit, tag))
+                .toList());
+        outfitItems().saveAll(createItems(outfit, user, requestedItems, clothing));
+        return detailResponse(outfit);
+    }
+
+    @Transactional
+    public void delete(String sessionId, Long outfitId) {
+        Long userId = currentUsers.requireUserId(sessionId);
+        Outfit outfit = requireOwnedOutfit(userId, outfitId);
+        outfitItems().deleteByOutfit(outfit);
+        outfitSeasons().deleteByOutfit(outfit);
+        outfitTagLinks().deleteByOutfit(outfit);
+        outfits().delete(outfit);
     }
 
     private List<OutfitItem> createItems(
@@ -149,6 +223,59 @@ public class OutfitService {
                 .map(Season::fromApiValue)
                 .distinct()
                 .toList();
+    }
+
+    private Outfit requireOwnedOutfit(Long userId, Long outfitId) {
+        Outfit outfit = outfits().findById(outfitId).orElseThrow(OutfitService::notFound);
+        if (!outfit.getUser().getUserId().equals(userId)) {
+            throw notFound();
+        }
+        return outfit;
+    }
+
+    private boolean hasSeason(Outfit outfit, Season requestedSeason) {
+        return outfitSeasons().findByOutfit(outfit).stream()
+                .anyMatch(outfitSeason -> outfitSeason.getSeason() == requestedSeason);
+    }
+
+    private boolean hasAllTags(Outfit outfit, Set<Long> requestedTagIds) {
+        Set<Long> outfitTagIds = outfitTagLinks().findByOutfit(outfit).stream()
+                .map(link -> link.getOutfitTag().getOutfitTagId())
+                .collect(java.util.stream.Collectors.toSet());
+        return outfitTagIds.containsAll(requestedTagIds);
+    }
+
+    private OutfitDetailResponse detailResponse(Outfit outfit) {
+        return new OutfitDetailResponse(
+                outfit.getOutfitId(),
+                outfit.getTitle(),
+                outfit.getNote(),
+                outfitSeasons().findByOutfit(outfit).stream()
+                        .map(season -> season.getSeason().dbValue())
+                        .toList(),
+                outfitTagLinks().findByOutfit(outfit).stream()
+                        .map(link -> new OutfitTagResponse(
+                                link.getOutfitTag().getOutfitTagId(),
+                                link.getOutfitTag().getName()))
+                        .toList(),
+                outfitItems().findByOutfit(outfit).stream()
+                        .map(this::itemResponse)
+                        .toList());
+    }
+
+    private OutfitSummaryResponse summaryResponse(Outfit outfit) {
+        return new OutfitSummaryResponse(outfit.getOutfitId(), outfit.getTitle(), outfit.getNote());
+    }
+
+    private OutfitItemResponse itemResponse(OutfitItem item) {
+        return new OutfitItemResponse(
+                item.getClothingId(),
+                item.getRole().dbValue(),
+                item.getSlot() == null ? null : item.getSlot().dbValue(),
+                item.getPositionX(),
+                item.getPositionY(),
+                item.getSize() == null ? null : item.getSize().dbValue(),
+                item.getZIndex());
     }
 
     private static String titleOrDefault(String title) {
