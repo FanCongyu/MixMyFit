@@ -105,6 +105,20 @@
 - finishing-a-development-branch 判断：开 PR；当前分支测试通过，适合提交后创建 PR。Commit hash：8aabd8c31de8f4be2a077f2cca39a12267c4ab69。
 - 人工干预和教训：用户要求先做快速收尾评审再文档收尾；README 经评估无需更新。教训是 Maven 测试不要并行共享同一 `target` 目录，且新增业务 controller 需要考虑无数据库 smoke test 的应用上下文边界。
 
+## 2026-08-13 15:35 +08:00
+
+- Task 编号和标题：T6 后端安全文件上传与图片访问。
+- 分支 / worktree：`task/06-secure-upload`；`D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-06-secure-upload`；linked worktree。
+- 使用的 subagent：Codex。
+- TDD 红灯摘要：`SecureUploadEndpointTest` 初始红灯为缺少 Task 6 的 `clothing/file` 实现类导致编译失败；`StoredFileServiceConfigurationTest` 初始红灯证明 `UPLOAD_DIR` 未控制上传根目录；完整 Testcontainers 测试被当前 Docker 不可用阻塞。
+- TDD 绿灯摘要：新增最小 `POST /api/clothes` 上传、`GET /api/clothes/{clothingId}/image` 访问、MIME/5 MB 校验、服务端 UUID 文件名、元数据保存、归属校验和 `UPLOAD_DIR` 配置读取。
+- 重构摘要：`ClothingService` 使用 `ObjectProvider<ClothingRepository>` 兼容无数据库的 `HealthSmokeTest`；`SecurityExceptionHandler` 改为 `public` 便于局部 MVC 测试复用真实异常映射；测试从 Testcontainers 集成测试调整为不依赖 Docker 的 MVC/文件系统局部测试。
+- 测试命令和结果：`mvn test -Dtest=SecureUploadEndpointTest,StoredFileServiceConfigurationTest` 通过，`Tests run: 7, Failures: 0, Errors: 0, Skipped: 0`；`mvn test -Dtest=HealthSmokeTest` 通过，`Tests run: 1, Failures: 0, Errors: 0, Skipped: 0`；`mvn -DskipTests test` 通过；`mvn test` 未通过，原因是 Docker/Testcontainers 环境不可用。
+- SPEC / PLAN 合规检查结论：通过；只完成 Task 6，未实现 T7 CRUD、元数据编辑或批量上传；满足上传 API、图片访问、文件大小、MIME、服务端文件名、受控目录和归属校验要求；未写入真实凭据。
+- 代码质量检查结论：通过；Critical issues 无；非阻塞建议包括后续增加真实 DB 端到端测试、图片 magic bytes 校验和文件缺失时更细的 404 映射。
+- finishing-a-development-branch 判断：保留；文档收尾后等待提交并回填 commit hash，完整后端测试仍需 Docker 可用后复验。
+- 人工干预和教训：用户要求先实现后评审再做文档收尾，并明确 README 只有在安装/运行/测试/目录结构/安全说明变化时才更新。本 task 的教训是文件上传 task 不能只测 controller contract，还要覆盖上传根目录配置；当 Testcontainers 环境不可用时，应保留不依赖 Docker 的局部测试来验证核心安全逻辑，同时如实记录完整测试阻塞。
+
 ## 2026-XX-XX HH:mm
 
 - Task 编号：
