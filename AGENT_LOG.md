@@ -145,7 +145,7 @@
 - 测试命令和结果：`mvn test -Dtest=ClothingCrudEndpointTest` 红灯确认失败后，最终通过，`Tests run: 13, Failures: 0, Errors: 0, Skipped: 0`；完整后端 `mvn test` 在启动 Docker Desktop 后通过，`Tests run: 54, Failures: 0, Errors: 0, Skipped: 0`。实际执行使用本机 `.m2\wrapper` 中 Maven 可执行文件。
 - SPEC / PLAN 合规检查结论：通过；只完成 T7B，满足列表分页、筛选、draft/ready 待完善状态、当前用户待完善计数、当前用户去重颜色复用、默认 `created_at desc` 排序和用户隔离要求；未写入真实凭据。
 - 代码质量检查结论：通过；Critical issues 无。Non-critical：当前筛选为 service 内存过滤，后续数据量增大时可下推到 repository/DB；非法 `status` / `season` 后续可统一为明确 `400 Bad Request`。
-- finishing-a-development-branch 判断：开 PR；Task 相关测试和完整后端测试均通过，当前分支适合提交后创建 PR；Commit hash 待提交后回填。
+- finishing-a-development-branch 判断：开 PR；Task 相关测试和完整后端测试均通过，当前分支适合提交后创建 PR；Commit hash: 61be47d30f426e8c8639dc8a7491213a20eaa20f。
 - 人工干预和教训：用户要求先做快速收尾评审并修复评审问题；Codex 经用户授权启动 Docker Desktop 解除 Testcontainers 阻塞。教训是 API contract 中的默认排序必须有专门测试，且红灯测试数据要能区分错误排序和正确排序，避免假阳性。
 
 ## 2026-XX-XX HH:mm

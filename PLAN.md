@@ -644,7 +644,7 @@
 
 **完成分支决定：** 开 PR
 
-**Commit hash：** 待填写
+**Commit hash：** 61be47d30f426e8c8639dc8a7491213a20eaa20f
 
 **目标：** 实现衣物 draft/ready 状态、分页列表、筛选、待完善数量和已有颜色复用 API。
 
