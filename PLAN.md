@@ -511,6 +511,25 @@
 
 ### T6：后端安全文件上传与图片访问
 
+**状态：** 已完成。
+
+**分支 / worktree：** `task/06-secure-upload`；`D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-06-secure-upload`。
+
+**测试结果：**
+- TDD 红灯：`mvn test -Dtest=SecureUploadEndpointTest` 因缺少 `clothing/file` 实现类编译失败；`mvn test -Dtest=StoredFileServiceConfigurationTest` 证明 `UPLOAD_DIR` 未生效。
+- Task 相关测试：`mvn test -Dtest=SecureUploadEndpointTest,StoredFileServiceConfigurationTest` 通过，`Tests run: 7, Failures: 0, Errors: 0, Skipped: 0`。
+- 回归测试：`mvn test -Dtest=HealthSmokeTest` 通过，`Tests run: 1, Failures: 0, Errors: 0, Skipped: 0`。
+- 编译验证：`mvn -DskipTests test` 通过。
+- 完整后端测试：`mvn test` 未通过，原因是当前环境找不到可用 Docker，Testcontainers 测试无法启动；Task 6 新增测试已通过。
+
+**SPEC 合规检查：** 通过。
+
+**代码质量检查：** 通过。
+
+**完成分支决定：** 保留。
+
+**Commit hash：** 待填写。
+
 **目标：** 实现安全图片上传存储和带归属校验的图片访问。
 
 **依赖关系：** T4。
