@@ -151,6 +151,62 @@ dd {
   padding: 8px 10px;
 }
 
+.clothing-upload {
+  display: grid;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.clothing-upload input {
+  font: inherit;
+}
+
+.clothing-batch-toolbar {
+  align-items: end;
+  background: #ffffff;
+  border: 1px solid #d8dee6;
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  padding: 14px;
+}
+
+.clothing-batch-toolbar label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.clothing-batch-toolbar select {
+  border: 1px solid #c8d0d9;
+  border-radius: 6px;
+  color: #1f2933;
+  font: inherit;
+  min-height: 38px;
+  padding: 7px 10px;
+}
+
+.clothing-batch-toolbar button {
+  background: #175cd3;
+  border: 0;
+  border-radius: 6px;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  min-height: 38px;
+  padding: 8px 12px;
+}
+
+.clothing-batch-toolbar button:disabled {
+  background: #c8d0d9;
+  cursor: not-allowed;
+}
+
 .clothing-grid {
   display: grid;
   gap: 16px;
@@ -168,6 +224,20 @@ dd {
   aspect-ratio: 4 / 5;
   background: #e7eaee;
   position: relative;
+}
+
+.clothing-card__select {
+  background: #ffffff;
+  border-radius: 6px;
+  left: 8px;
+  padding: 4px;
+  position: absolute;
+  top: 8px;
+  z-index: 1;
+}
+
+.clothing-card__select input {
+  display: block;
 }
 
 .clothing-card__image {
