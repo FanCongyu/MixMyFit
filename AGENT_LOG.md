@@ -162,6 +162,20 @@
 - finishing-a-development-branch 判断：开 PR；Task 相关测试和完整后端测试均通过，当前分支适合提交后创建 PR；Commit hash：ee3842e06b04b36dfbfd27768aa5ba6756bf6968。
 - 人工干预和教训：用户要求快速收尾评审后再做文档收尾，且明确 commit hash 待填写不阻塞 PR、README 仅必要时更新。教训是 batch 写入应先完整校验全部归属再修改，避免混入非法 ID 时产生部分更新。
 
+## 2026-08-13 18:35 +08:00
+
+- Task 编号和标题：T9 后端搭配方案保存与校验。
+- 分支 / worktree：`task/09-outfit-save`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-09-outfit-save`; linked worktree。
+- 使用的 subagent：Codex。
+- TDD 红灯摘要：新增 `OutfitSaveEndpointTest` 后，`mvn test -Dtest=OutfitSaveEndpointTest` 因缺少 `OutfitService`、`OutfitController`、`OutfitExceptionHandler` 编译失败，确认 Task 9 创建接口尚未实现。
+- TDD 绿灯摘要：新增 `POST /api/outfits`、请求/响应 DTO、outfit service 和统一错误处理，实现搭配保存、空 items 校验、默认标题、draft clothing 拒绝、clothing / outfit tag 用户归属校验，以及主槽位和配饰 item 保存。
+- 重构摘要：保持新增代码集中在 `outfit/` 包；测试使用 standalone MockMvc 和内存 fake repository，避免扩展到 T10 查询、编辑、删除范围；未修改 README 或业务范围外代码。
+- 测试命令和结果：`mvn test -Dtest=OutfitSaveEndpointTest` 初始 RED 编译失败；最终通过，Tests run: 6, Failures: 0, Errors: 0, Skipped: 0；完整后端 `mvn test` 通过，Tests run: 65, Failures: 0, Errors: 0, Skipped: 0。完整后端测试首次 124s 超时，延长超时后通过。实际执行使用本机 `.m2\wrapper` 中 Maven 可执行文件。
+- SPEC / PLAN 合规检查结论：通过；只完成 T9，满足 `POST /api/outfits` 创建 contract、`201` + `outfitId`、空搭配 `400`、默认标题、部分主槽位、配饰位置 / 尺寸 / z-index、draft clothing 拒绝和用户隔离要求；未实现 T10 管理接口；未写入真实凭据。
+- 代码质量检查结论：通过；Critical issues 无。Non-critical：后续可补 `items: null`、非法 enum、空 item 和真实 JPA 集成测试；T10 扩展时可抽取测试 fixture。
+- finishing-a-development-branch 判断：开 PR；Task 相关测试和完整后端测试均通过，当前分支适合提交后创建 PR；Commit hash：4ddf6784e658cffb7cc39c3a1ab5f9abf1c6640a。
+- 人工干预和教训：用户要求快速收尾评审后再做文档收尾，并明确 commit hash 待填写不阻塞 PR、README 仅必要时更新。教训是新增文件可能已 staged，评审时要同时看 `git diff --cached`；创建类 task 也要确认没有顺手实现后续管理 endpoint。
+
 ## 2026-XX-XX HH:mm
 
 - Task 编号：

@@ -739,6 +739,23 @@
 
 ### T9：后端搭配方案保存与校验
 
+**状态：** 已完成
+
+**分支 / worktree：** `task/09-outfit-save`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-09-outfit-save`
+
+**测试结果：**
+- TDD 红灯：`mvn test -Dtest=OutfitSaveEndpointTest` 编译失败，缺少 `OutfitService`、`OutfitController`、`OutfitExceptionHandler`。
+- Task 相关测试：`mvn test -Dtest=OutfitSaveEndpointTest` 通过；Tests run: 6, Failures: 0, Errors: 0, Skipped: 0。
+- 完整后端测试：`mvn test` 通过；Tests run: 65, Failures: 0, Errors: 0, Skipped: 0。首次 124s 超时，延长超时后通过。
+
+**SPEC 合规检查：** 通过
+
+**代码质量检查：** 通过
+
+**完成分支决定：** 开 PR
+
+**Commit hash：** 4ddf6784e658cffb7cc39c3a1ab5f9abf1c6640a
+
 **目标：** 实现搭配方案保存，包括固定主槽位、配饰、元数据和保存校验。
 
 **依赖关系：** T7B。
