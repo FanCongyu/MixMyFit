@@ -1,13 +1,24 @@
 package com.fan.mixmyfit.clothing;
 
+import com.fan.mixmyfit.domain.Category;
 import com.fan.mixmyfit.domain.Clothing;
+import com.fan.mixmyfit.domain.ClothingSeason;
+import com.fan.mixmyfit.domain.ClothingTag;
+import com.fan.mixmyfit.domain.ClothingTagLink;
+import com.fan.mixmyfit.domain.Season;
 import com.fan.mixmyfit.domain.User;
+import com.fan.mixmyfit.domain.repository.CategoryRepository;
 import com.fan.mixmyfit.domain.repository.ClothingRepository;
+import com.fan.mixmyfit.domain.repository.ClothingSeasonRepository;
+import com.fan.mixmyfit.domain.repository.ClothingTagLinkRepository;
+import com.fan.mixmyfit.domain.repository.ClothingTagRepository;
 import com.fan.mixmyfit.file.ClothingImage;
 import com.fan.mixmyfit.file.StoredFile;
 import com.fan.mixmyfit.file.StoredFileService;
 import com.fan.mixmyfit.security.AccessDeniedException;
 import com.fan.mixmyfit.security.CurrentUserResolver;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,14 +29,26 @@ public class ClothingService {
     private final CurrentUserResolver currentUsers;
     private final ObjectProvider<ClothingRepository> clothingRepositories;
     private final StoredFileService storedFiles;
+    private final ObjectProvider<CategoryRepository> categoryRepositories;
+    private final ObjectProvider<ClothingSeasonRepository> clothingSeasonRepositories;
+    private final ObjectProvider<ClothingTagRepository> clothingTagRepositories;
+    private final ObjectProvider<ClothingTagLinkRepository> clothingTagLinkRepositories;
 
     public ClothingService(
             CurrentUserResolver currentUsers,
             ObjectProvider<ClothingRepository> clothingRepositories,
-            StoredFileService storedFiles) {
+            StoredFileService storedFiles,
+            ObjectProvider<CategoryRepository> categoryRepositories,
+            ObjectProvider<ClothingSeasonRepository> clothingSeasonRepositories,
+            ObjectProvider<ClothingTagRepository> clothingTagRepositories,
+            ObjectProvider<ClothingTagLinkRepository> clothingTagLinkRepositories) {
         this.currentUsers = currentUsers;
         this.clothingRepositories = clothingRepositories;
         this.storedFiles = storedFiles;
+        this.categoryRepositories = categoryRepositories;
+        this.clothingSeasonRepositories = clothingSeasonRepositories;
+        this.clothingTagRepositories = clothingTagRepositories;
+        this.clothingTagLinkRepositories = clothingTagLinkRepositories;
     }
 
     @Transactional
@@ -42,17 +65,133 @@ public class ClothingService {
     }
 
     @Transactional(readOnly = true)
-    public ClothingImage image(String sessionId, Long clothingId) {
+    public ClothingListResponse list(String sessionId) {
         Long userId = currentUsers.requireUserId(sessionId);
-        Clothing clothing = clothes().findById(clothingId)
-                .orElseThrow(() -> new AccessDeniedException("RESOURCE_NOT_FOUND", "Resource not found"));
-        if (!clothing.getUser().getUserId().equals(userId)) {
-            throw new AccessDeniedException("RESOURCE_NOT_FOUND", "Resource not found");
+        List<ClothingResponse> items = clothes().findByUserUserIdOrderByClothingId(userId).stream()
+                .map(this::response)
+                .toList();
+        return new ClothingListResponse(items, 0, items.size(), items.size());
+    }
+
+    @Transactional(readOnly = true)
+    public ClothingResponse get(String sessionId, Long clothingId) {
+        return response(requireOwnedClothing(sessionId, clothingId));
+    }
+
+    @Transactional
+    public ClothingResponse update(String sessionId, Long clothingId, ClothingUpdateRequest request) {
+        Long userId = currentUsers.requireUserId(sessionId);
+        Clothing clothing = requireOwnedClothing(userId, clothingId);
+        Category category = request != null && request.hasCategoryId()
+                ? resolveCategory(userId, request.categoryId())
+                : clothing.getCategory();
+        String name = request != null && request.hasName() ? request.name() : clothing.getName();
+        String color = request != null && request.hasColor() ? request.color() : clothing.getColor();
+        clothing.updateMetadata(category, name, color);
+
+        if (request != null && request.seasons() != null) {
+            replaceSeasons(clothing, request.seasons());
         }
+        if (request != null && request.tagIds() != null) {
+            replaceTags(userId, clothing, request.tagIds());
+        }
+        return response(clothing);
+    }
+
+    @Transactional
+    public void delete(String sessionId, Long clothingId) {
+        Clothing clothing = requireOwnedClothing(sessionId, clothingId);
+        clothes().delete(clothing);
+    }
+
+    @Transactional(readOnly = true)
+    public ClothingImage image(String sessionId, Long clothingId) {
+        Clothing clothing = requireOwnedClothing(sessionId, clothingId);
         return new ClothingImage(storedFiles.read(clothing.getImagePath()), clothing.getContentType());
+    }
+
+    private ClothingResponse response(Clothing clothing) {
+        List<ClothingSeason> seasons = clothingSeasons()
+                .findByClothingClothingIdOrderByClothingSeasonId(clothing.getClothingId());
+        List<ClothingTag> tags = clothingTagLinks()
+                .findByClothingClothingIdOrderByClothingTagLinkId(clothing.getClothingId())
+                .stream()
+                .map(ClothingTagLink::getClothingTag)
+                .toList();
+        return ClothingResponse.from(clothing, seasons, tags);
+    }
+
+    private Clothing requireOwnedClothing(String sessionId, Long clothingId) {
+        return requireOwnedClothing(currentUsers.requireUserId(sessionId), clothingId);
+    }
+
+    private Clothing requireOwnedClothing(Long userId, Long clothingId) {
+        Clothing clothing = clothes().findById(clothingId)
+                .orElseThrow(ClothingService::notFound);
+        if (!clothing.getUser().getUserId().equals(userId)) {
+            throw notFound();
+        }
+        return clothing;
+    }
+
+    private Category resolveCategory(Long userId, Long categoryId) {
+        if (categoryId == null) {
+            return null;
+        }
+        Category category = categories().findById(categoryId).orElseThrow(ClothingService::notFound);
+        User owner = category.getUser();
+        if (owner != null && !owner.getUserId().equals(userId)) {
+            throw notFound();
+        }
+        return category;
+    }
+
+    private void replaceSeasons(Clothing clothing, List<String> requestedSeasons) {
+        clothingSeasons().deleteByClothingClothingId(clothing.getClothingId());
+        List<ClothingSeason> replacements = requestedSeasons.stream()
+                .map(Season::fromApiValue)
+                .distinct()
+                .map(season -> new ClothingSeason(clothing, season))
+                .toList();
+        clothingSeasons().saveAll(replacements);
+    }
+
+    private void replaceTags(Long userId, Clothing clothing, List<Long> tagIds) {
+        List<ClothingTag> resolvedTags = new ArrayList<>();
+        for (Long tagId : tagIds.stream().distinct().toList()) {
+            ClothingTag tag = clothingTags().findById(tagId).orElseThrow(ClothingService::notFound);
+            if (!tag.getUser().getUserId().equals(userId)) {
+                throw notFound();
+            }
+            resolvedTags.add(tag);
+        }
+        clothingTagLinks().deleteByClothingClothingId(clothing.getClothingId());
+        clothingTagLinks().saveAll(resolvedTags.stream()
+                .map(tag -> new ClothingTagLink(clothing, tag))
+                .toList());
+    }
+
+    private static AccessDeniedException notFound() {
+        return new AccessDeniedException("RESOURCE_NOT_FOUND", "Resource not found");
     }
 
     private ClothingRepository clothes() {
         return clothingRepositories.getObject();
+    }
+
+    private CategoryRepository categories() {
+        return categoryRepositories.getObject();
+    }
+
+    private ClothingSeasonRepository clothingSeasons() {
+        return clothingSeasonRepositories.getObject();
+    }
+
+    private ClothingTagRepository clothingTags() {
+        return clothingTagRepositories.getObject();
+    }
+
+    private ClothingTagLinkRepository clothingTagLinks() {
+        return clothingTagLinkRepositories.getObject();
     }
 }

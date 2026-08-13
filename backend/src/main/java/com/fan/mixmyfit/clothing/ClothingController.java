@@ -7,10 +7,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,6 +34,35 @@ public class ClothingController {
             @CookieValue(name = SessionCookieFactory.SESSION_COOKIE_NAME, required = false) String sessionId,
             @RequestParam("file") MultipartFile file) {
         return clothes.upload(sessionId, file);
+    }
+
+    @GetMapping
+    public ClothingListResponse list(
+            @CookieValue(name = SessionCookieFactory.SESSION_COOKIE_NAME, required = false) String sessionId) {
+        return clothes.list(sessionId);
+    }
+
+    @GetMapping("/{clothingId}")
+    public ClothingResponse get(
+            @CookieValue(name = SessionCookieFactory.SESSION_COOKIE_NAME, required = false) String sessionId,
+            @PathVariable Long clothingId) {
+        return clothes.get(sessionId, clothingId);
+    }
+
+    @PatchMapping("/{clothingId}")
+    public ClothingResponse update(
+            @CookieValue(name = SessionCookieFactory.SESSION_COOKIE_NAME, required = false) String sessionId,
+            @PathVariable Long clothingId,
+            @RequestBody ClothingUpdateRequest request) {
+        return clothes.update(sessionId, clothingId, request);
+    }
+
+    @DeleteMapping("/{clothingId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(
+            @CookieValue(name = SessionCookieFactory.SESSION_COOKIE_NAME, required = false) String sessionId,
+            @PathVariable Long clothingId) {
+        clothes.delete(sessionId, clothingId);
     }
 
     @GetMapping("/{clothingId}/image")

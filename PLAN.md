@@ -573,6 +573,24 @@
 
 ### T7A：后端衣物基础 CRUD 与归属校验
 
+**状态：** 已完成
+
+**分支 / worktree：** `task/07a-clothing-crud`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-07a-clothing-crud`
+
+**测试结果：**
+- `mvn test -Dtest=ClothingCrudEndpointTest` 通过；Tests run: 6, Failures: 0, Errors: 0, Skipped: 0。
+- `mvn test -Dtest=ClothingCrudEndpointTest,SecureUploadEndpointTest,StoredFileServiceConfigurationTest` 通过；Tests run: 13, Failures: 0, Errors: 0, Skipped: 0。
+- `mvn test-compile` 通过。
+- 完整 `mvn test` 未通过，阻塞原因是当前 Docker/Testcontainers 环境不可用；新增 T7A 与非 Docker 相关测试通过。
+
+**SPEC 合规检查：** 通过
+
+**代码质量检查：** 通过
+
+**完成分支决定：** 开 PR
+
+**Commit hash：** 9da4aa3b4c9756af1e402e7ee2f27aeae3277cff
+
 **目标：** 实现衣物记录的创建、读取、更新、删除，并严格执行归属校验。
 
 **依赖关系：** T5、T6。

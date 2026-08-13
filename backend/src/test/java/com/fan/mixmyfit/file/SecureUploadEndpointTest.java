@@ -12,7 +12,11 @@ import com.fan.mixmyfit.clothing.ClothingController;
 import com.fan.mixmyfit.clothing.ClothingService;
 import com.fan.mixmyfit.domain.Clothing;
 import com.fan.mixmyfit.domain.User;
+import com.fan.mixmyfit.domain.repository.CategoryRepository;
 import com.fan.mixmyfit.domain.repository.ClothingRepository;
+import com.fan.mixmyfit.domain.repository.ClothingSeasonRepository;
+import com.fan.mixmyfit.domain.repository.ClothingTagLinkRepository;
+import com.fan.mixmyfit.domain.repository.ClothingTagRepository;
 import com.fan.mixmyfit.security.CurrentUserResolver;
 import com.fan.mixmyfit.security.SecurityExceptionHandler;
 import com.fan.mixmyfit.security.SessionRegistry;
@@ -58,7 +62,14 @@ class SecureUploadEndpointTest {
         CurrentUserResolver currentUsers = fakeCurrentUsers();
 
         StoredFileService storedFiles = new StoredFileService(uploadDir.toString());
-        ClothingService service = new ClothingService(currentUsers, repositoryProvider(), storedFiles);
+        ClothingService service = new ClothingService(
+                currentUsers,
+                repositoryProvider(clothes),
+                storedFiles,
+                repositoryProvider(null),
+                repositoryProvider(null),
+                repositoryProvider(null),
+                repositoryProvider(null));
 
         mvc = MockMvcBuilders.standaloneSetup(new ClothingController(service))
                 .setControllerAdvice(new FileExceptionHandler(), new SecurityExceptionHandler())
@@ -186,26 +197,26 @@ class SecureUploadEndpointTest {
                 handler);
     }
 
-    private ObjectProvider<ClothingRepository> repositoryProvider() {
+    private <T> ObjectProvider<T> repositoryProvider(T repository) {
         return new ObjectProvider<>() {
             @Override
-            public ClothingRepository getObject(Object... args) {
-                return clothes;
+            public T getObject(Object... args) {
+                return repository;
             }
 
             @Override
-            public ClothingRepository getIfAvailable() {
-                return clothes;
+            public T getIfAvailable() {
+                return repository;
             }
 
             @Override
-            public ClothingRepository getIfUnique() {
-                return clothes;
+            public T getIfUnique() {
+                return repository;
             }
 
             @Override
-            public ClothingRepository getObject() {
-                return clothes;
+            public T getObject() {
+                return repository;
             }
         };
     }
