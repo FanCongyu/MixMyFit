@@ -911,6 +911,26 @@
 
 ### T12：前端认证与个人资料页面
 
+**状态：** 已完成
+
+**分支 / worktree：** `task/12-frontend-auth`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-12-frontend-auth`
+
+**测试结果：**
+- TDD 红灯：`npm test -- --run` 初次因 `vitest` 未安装未进入断言；安装依赖后红灯符合预期，新增测试因缺少 `auth` store、`LoginView`、`RegisterView` 和 `ProfileView` 失败。
+- Task 相关前端测试：`npm test -- --run` 通过；Test Files: 6 passed；Tests: 10 passed。
+- 前端构建：`npm run build` 通过。
+- Makefile 前端等价流程：`npm ci`、`npm run build`、`npm test -- --run` 均通过。
+- 后端回归：使用本机 `.m2\wrapper` 中 Maven 可执行文件运行 `mvn test` 通过；Tests run: 72, Failures: 0, Errors: 0, Skipped: 0。
+- 顶层 `make test` 未直接运行，原因是当前 PowerShell 环境中 `make` 不在 PATH；已分别执行 Makefile 等价命令。
+
+**SPEC 合规检查：** 通过
+
+**代码质量检查：** 通过
+
+**完成分支决定：** 开 PR
+
+**Commit：** 待填写
+
 **目标：** 实现注册、登录、退出、个人资料、昵称修改和密码修改页面。
 
 **依赖关系：** T3B、T11。
