@@ -26,6 +26,7 @@ import com.fan.mixmyfit.security.SecurityExceptionHandler;
 import com.fan.mixmyfit.security.SessionCookieFactory;
 import com.fan.mixmyfit.security.SessionRegistry;
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -177,6 +178,120 @@ class ClothingCrudEndpointTest {
         assertThat(clothes).isEmpty();
     }
 
+    @Test
+    void draftFilterReturnsClothingMissingCategory() throws Exception {
+        Category category = saveCategory(Category.custom(owner, "Layer"), 210L);
+        saveClothing(Clothing.ready(owner, category, "Ready Shirt", "blue", "ready.png", "ready.png", "image/png", 8L), 110L);
+        saveClothing(Clothing.draft(owner, "draft.png", "draft.png", "image/png", 8L), 111L);
+
+        mvc.perform(get("/api/clothes").queryParam("status", "draft").cookie(sessionCookie()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].clothingId").value(111))
+                .andExpect(jsonPath("$.items[0].status").value("draft"));
+    }
+
+    @Test
+    void readyFilterExcludesDraftClothing() throws Exception {
+        Category category = saveCategory(Category.custom(owner, "Layer"), 211L);
+        saveClothing(Clothing.draft(owner, "draft.png", "draft.png", "image/png", 8L), 112L);
+        saveClothing(Clothing.ready(owner, category, "Ready Shirt", "blue", "ready.png", "ready.png", "image/png", 8L), 113L);
+
+        mvc.perform(get("/api/clothes").queryParam("status", "ready").cookie(sessionCookie()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].clothingId").value(113))
+                .andExpect(jsonPath("$.items[0].status").value("ready"));
+    }
+
+    @Test
+    void listSupportsPaging() throws Exception {
+        saveClothing(Clothing.draft(owner, "first.png", "first.png", "image/png", 8L), 124L);
+        saveClothing(Clothing.draft(owner, "second.png", "second.png", "image/png", 8L), 125L);
+        saveClothing(Clothing.draft(owner, "third.png", "third.png", "image/png", 8L), 126L);
+
+        mvc.perform(get("/api/clothes")
+                        .queryParam("page", "1")
+                        .queryParam("size", "1")
+                        .cookie(sessionCookie()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page").value(1))
+                .andExpect(jsonPath("$.size").value(1))
+                .andExpect(jsonPath("$.total").value(3))
+                .andExpect(jsonPath("$.items.length()").value(1))
+                .andExpect(jsonPath("$.items[0].clothingId").value(125));
+    }
+
+    @Test
+    void listDefaultsToCreatedAtDescending() throws Exception {
+        Clothing older = saveClothing(Clothing.draft(owner, "older.png", "older.png", "image/png", 8L), 129L);
+        Clothing newer = saveClothing(Clothing.draft(owner, "newer.png", "newer.png", "image/png", 8L), 130L);
+        setField(older, "createdAt", LocalDateTime.parse("2026-08-12T10:00:00"));
+        setField(newer, "createdAt", LocalDateTime.parse("2026-08-13T10:00:00"));
+
+        mvc.perform(get("/api/clothes").cookie(sessionCookie()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].clothingId").value(130))
+                .andExpect(jsonPath("$.items[1].clothingId").value(129));
+    }
+
+    @Test
+    void colorSeasonAndTagFiltersOnlyReturnCurrentUsersMatchingClothing() throws Exception {
+        Category category = saveCategory(Category.custom(owner, "Layer"), 212L);
+        Category otherCategory = saveCategory(Category.custom(anotherUser, "Private Layer"), 213L);
+        ClothingTag office = saveTag(new ClothingTag(owner, "Office"), 310L);
+        ClothingTag otherOffice = saveTag(new ClothingTag(anotherUser, "Office"), 311L);
+
+        Clothing matching = saveClothing(Clothing.ready(owner, category, "Navy Shirt", "navy", "match.png", "match.png", "image/png", 8L), 114L);
+        seasons.add(new ClothingSeason(matching, com.fan.mixmyfit.domain.Season.SUMMER));
+        tagLinks.add(new ClothingTagLink(matching, office));
+
+        Clothing wrongSeason = saveClothing(Clothing.ready(owner, category, "Winter Shirt", "navy", "winter.png", "winter.png", "image/png", 8L), 115L);
+        seasons.add(new ClothingSeason(wrongSeason, com.fan.mixmyfit.domain.Season.WINTER));
+        tagLinks.add(new ClothingTagLink(wrongSeason, office));
+
+        Clothing otherUsersMatch = saveClothing(Clothing.ready(anotherUser, otherCategory, "Other Shirt", "navy", "other.png", "other.png", "image/png", 8L), 116L);
+        seasons.add(new ClothingSeason(otherUsersMatch, com.fan.mixmyfit.domain.Season.SUMMER));
+        tagLinks.add(new ClothingTagLink(otherUsersMatch, otherOffice));
+
+        mvc.perform(get("/api/clothes")
+                        .queryParam("color", "navy")
+                        .queryParam("season", "summer")
+                        .queryParam("tagIds", "310")
+                        .cookie(sessionCookie()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].clothingId").value(114));
+    }
+
+    @Test
+    void colorReuseEndpointReturnsOnlyCurrentUsersDistinctColors() throws Exception {
+        Category category = saveCategory(Category.custom(owner, "Layer"), 214L);
+        Category otherCategory = saveCategory(Category.custom(anotherUser, "Private Layer"), 215L);
+        saveClothing(Clothing.ready(owner, category, "Blue Shirt", "blue", "blue.png", "blue.png", "image/png", 8L), 117L);
+        saveClothing(Clothing.ready(owner, category, "Navy Shirt", "navy", "navy.png", "navy.png", "image/png", 8L), 118L);
+        saveClothing(Clothing.ready(owner, category, "No Color", null, "none.png", "none.png", "image/png", 8L), 119L);
+        saveClothing(Clothing.ready(anotherUser, otherCategory, "Red Shirt", "red", "red.png", "red.png", "image/png", 8L), 120L);
+
+        mvc.perform(get("/api/clothes/colors").cookie(sessionCookie()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").value("blue"))
+                .andExpect(jsonPath("$[1]").value("navy"))
+                .andExpect(jsonPath("$.length()").value(2));
+    }
+
+    @Test
+    void draftCountOnlyCountsCurrentUsersDraftClothing() throws Exception {
+        Category category = saveCategory(Category.custom(owner, "Layer"), 216L);
+        saveClothing(Clothing.draft(owner, "draft.png", "draft.png", "image/png", 8L), 121L);
+        saveClothing(Clothing.ready(owner, category, "Ready Shirt", "blue", "ready.png", "ready.png", "image/png", 8L), 122L);
+        saveClothing(Clothing.draft(anotherUser, "other.png", "other.png", "image/png", 8L), 123L);
+
+        mvc.perform(get("/api/clothes/draft-count").cookie(sessionCookie()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(1));
+    }
+
     private Clothing saveClothing(Clothing clothing, Long clothingId) {
         setId(clothing, "clothingId", clothingId);
         clothes.add(clothing);
@@ -321,10 +436,14 @@ class ClothingCrudEndpointTest {
     }
 
     private static void setId(Object target, String fieldName, Long id) {
+        setField(target, fieldName, id);
+    }
+
+    private static void setField(Object target, String fieldName, Object value) {
         try {
             Field field = target.getClass().getDeclaredField(fieldName);
             field.setAccessible(true);
-            field.set(target, id);
+            field.set(target, value);
         } catch (ReflectiveOperationException exception) {
             throw new IllegalStateException(exception);
         }

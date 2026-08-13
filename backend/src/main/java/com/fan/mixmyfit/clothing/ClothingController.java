@@ -2,6 +2,7 @@ package com.fan.mixmyfit.clothing;
 
 import com.fan.mixmyfit.file.ClothingImage;
 import com.fan.mixmyfit.security.SessionCookieFactory;
+import java.util.List;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,8 +39,27 @@ public class ClothingController {
 
     @GetMapping
     public ClothingListResponse list(
+            @CookieValue(name = SessionCookieFactory.SESSION_COOKIE_NAME, required = false) String sessionId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String color,
+            @RequestParam(required = false) String season,
+            @RequestParam(required = false) List<Long> tagIds) {
+        return clothes.list(sessionId, page, size, categoryId, status, color, season, tagIds);
+    }
+
+    @GetMapping("/colors")
+    public List<String> colors(
             @CookieValue(name = SessionCookieFactory.SESSION_COOKIE_NAME, required = false) String sessionId) {
-        return clothes.list(sessionId);
+        return clothes.colors(sessionId);
+    }
+
+    @GetMapping("/draft-count")
+    public DraftCountResponse draftCount(
+            @CookieValue(name = SessionCookieFactory.SESSION_COOKIE_NAME, required = false) String sessionId) {
+        return clothes.draftCount(sessionId);
     }
 
     @GetMapping("/{clothingId}")

@@ -629,6 +629,23 @@
 
 ### T7B：后端待完善状态、分页、筛选与颜色复用
 
+**状态：** 已完成
+
+**分支 / worktree：** `task/07b-clothing-filtering`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-07b-clothing-filtering`
+
+**测试结果：**
+- TDD 红灯：`mvn test -Dtest=ClothingCrudEndpointTest` 初始失败 6 个，原因是筛选、分页、颜色复用和待完善计数 endpoint 缺失；新增默认排序测试修正后先失败于返回 `clothingId` 升序。
+- Task 相关测试：`mvn test -Dtest=ClothingCrudEndpointTest` 通过；Tests run: 13, Failures: 0, Errors: 0, Skipped: 0。
+- 完整后端测试：Docker Desktop 启动后，`mvn test` 通过；Tests run: 54, Failures: 0, Errors: 0, Skipped: 0。
+
+**SPEC 合规检查：** 通过
+
+**代码质量检查：** 通过
+
+**完成分支决定：** 开 PR
+
+**Commit hash：** 待填写
+
 **目标：** 实现衣物 draft/ready 状态、分页列表、筛选、待完善数量和已有颜色复用 API。
 
 **依赖关系：** T7A。

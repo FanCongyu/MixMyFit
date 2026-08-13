@@ -3,6 +3,7 @@ package com.fan.mixmyfit.clothing;
 import com.fan.mixmyfit.domain.Category;
 import com.fan.mixmyfit.domain.Clothing;
 import com.fan.mixmyfit.domain.ClothingSeason;
+import com.fan.mixmyfit.domain.ClothingStatus;
 import com.fan.mixmyfit.domain.ClothingTag;
 import com.fan.mixmyfit.domain.ClothingTagLink;
 import com.fan.mixmyfit.domain.Season;
@@ -18,6 +19,7 @@ import com.fan.mixmyfit.file.StoredFileService;
 import com.fan.mixmyfit.security.AccessDeniedException;
 import com.fan.mixmyfit.security.CurrentUserResolver;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
@@ -65,12 +67,56 @@ public class ClothingService {
     }
 
     @Transactional(readOnly = true)
-    public ClothingListResponse list(String sessionId) {
+    public ClothingListResponse list(
+            String sessionId,
+            int page,
+            int size,
+            Long categoryId,
+            String status,
+            String color,
+            String season,
+            List<Long> tagIds) {
         Long userId = currentUsers.requireUserId(sessionId);
-        List<ClothingResponse> items = clothes().findByUserUserIdOrderByClothingId(userId).stream()
+        List<Clothing> filtered = clothes().findByUserUserIdOrderByClothingId(userId).stream()
+                .filter(clothing -> matchesCategory(clothing, categoryId))
+                .filter(clothing -> matchesStatus(clothing, status))
+                .filter(clothing -> matchesColor(clothing, color))
+                .filter(clothing -> matchesSeason(clothing, season))
+                .filter(clothing -> matchesTags(clothing, tagIds))
+                .sorted(Comparator.comparing(
+                                Clothing::getCreatedAt,
+                                Comparator.nullsLast(Comparator.reverseOrder()))
+                        .thenComparing(Clothing::getClothingId, Comparator.reverseOrder()))
+                .toList();
+
+        int safePage = Math.max(page, 0);
+        int safeSize = size > 0 ? size : 20;
+        int fromIndex = Math.min(safePage * safeSize, filtered.size());
+        int toIndex = Math.min(fromIndex + safeSize, filtered.size());
+        List<ClothingResponse> items = filtered.subList(fromIndex, toIndex).stream()
                 .map(this::response)
                 .toList();
-        return new ClothingListResponse(items, 0, items.size(), items.size());
+        return new ClothingListResponse(items, safePage, safeSize, filtered.size());
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> colors(String sessionId) {
+        Long userId = currentUsers.requireUserId(sessionId);
+        return clothes().findByUserUserIdOrderByClothingId(userId).stream()
+                .map(Clothing::getColor)
+                .filter(value -> value != null && !value.isBlank())
+                .distinct()
+                .sorted()
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public DraftCountResponse draftCount(String sessionId) {
+        Long userId = currentUsers.requireUserId(sessionId);
+        long count = clothes().findByUserUserIdOrderByClothingId(userId).stream()
+                .filter(clothing -> clothing.getStatus() == ClothingStatus.DRAFT)
+                .count();
+        return new DraftCountResponse(count);
     }
 
     @Transactional(readOnly = true)
@@ -119,6 +165,46 @@ public class ClothingService {
                 .map(ClothingTagLink::getClothingTag)
                 .toList();
         return ClothingResponse.from(clothing, seasons, tags);
+    }
+
+    private boolean matchesCategory(Clothing clothing, Long categoryId) {
+        return categoryId == null
+                || (clothing.getCategory() != null && categoryId.equals(clothing.getCategory().getCategoryId()));
+    }
+
+    private boolean matchesStatus(Clothing clothing, String status) {
+        if (status == null || status.isBlank()) {
+            return true;
+        }
+        return clothing.getStatus().dbValue().equals(status);
+    }
+
+    private boolean matchesColor(Clothing clothing, String color) {
+        return color == null || color.isBlank() || color.equals(clothing.getColor());
+    }
+
+    private boolean matchesSeason(Clothing clothing, String season) {
+        if (season == null || season.isBlank()) {
+            return true;
+        }
+        Season requested = Season.fromApiValue(season);
+        return clothingSeasons()
+                .findByClothingClothingIdOrderByClothingSeasonId(clothing.getClothingId())
+                .stream()
+                .anyMatch(clothingSeason -> clothingSeason.getSeason() == requested);
+    }
+
+    private boolean matchesTags(Clothing clothing, List<Long> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) {
+            return true;
+        }
+        List<Long> requestedTagIds = tagIds.stream().distinct().toList();
+        List<Long> clothingTagIds = clothingTagLinks()
+                .findByClothingClothingIdOrderByClothingTagLinkId(clothing.getClothingId())
+                .stream()
+                .map(link -> link.getClothingTag().getClothingTagId())
+                .toList();
+        return clothingTagIds.containsAll(requestedTagIds);
     }
 
     private Clothing requireOwnedClothing(String sessionId, Long clothingId) {
