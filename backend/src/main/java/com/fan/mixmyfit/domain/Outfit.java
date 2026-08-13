@@ -69,6 +69,11 @@ public class Outfit {
         return updatedAt;
     }
 
+    public void update(String title, String note) {
+        this.title = title;
+        this.note = note;
+    }
+
     @Override
     public boolean equals(Object other) {
         if (this == other) {
