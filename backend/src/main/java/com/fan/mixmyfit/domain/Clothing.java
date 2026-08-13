@@ -148,6 +148,13 @@ public class Clothing {
         return updatedAt;
     }
 
+    public void updateMetadata(Category category, String name, String color) {
+        this.category = category;
+        this.name = name;
+        this.color = color;
+        this.status = category == null ? ClothingStatus.DRAFT : ClothingStatus.READY;
+    }
+
     @Override
     public boolean equals(Object other) {
         if (this == other) {

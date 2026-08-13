@@ -119,6 +119,21 @@
 - finishing-a-development-branch 判断：保留；文档收尾后等待提交并回填 commit hash，完整后端测试仍需 Docker 可用后复验。
 - 人工干预和教训：用户要求先实现后评审再做文档收尾，并明确 README 只有在安装/运行/测试/目录结构/安全说明变化时才更新。本 task 的教训是文件上传 task 不能只测 controller contract，还要覆盖上传根目录配置；当 Testcontainers 环境不可用时，应保留不依赖 Docker 的局部测试来验证核心安全逻辑，同时如实记录完整测试阻塞。
 
+## 2026-08-13 16:45 +08:00
+
+- Task 编号和标题：T7A 后端衣物基础 CRUD 与归属校验。
+- 分支 / worktree：`task/07a-clothing-crud`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-07a-clothing-crud`; linked worktree。
+- 使用的 subagent：Codex。
+- TDD 红灯摘要：新增 `ClothingCrudEndpointTest` 后，`mvn test -Dtest=ClothingCrudEndpointTest` 先因 `ClothingService` 缺少 T7A 所需构造依赖 / CRUD 行为编译失败；随后新增 PATCH optional 字段测试，先失败于只传 `color` 会把 `name` 清空。
+- TDD 绿灯摘要：新增 `GET /api/clothes`、`GET /api/clothes/{clothingId}`、`PATCH /api/clothes/{clothingId}`、`DELETE /api/clothes/{clothingId}`，实现衣物详情 / 基础列表 / 元数据更新 / 删除，以及衣物、品类、标签的用户归属校验；修复 PATCH 未提供字段保留原值。
+- 重构摘要：新增 clothing 请求 / 响应 DTO；在 `Clothing` 中增加 `updateMetadata`；补充 seasons/tag links 查询与替换 repository 方法；更新上传测试的 `ClothingService` 构造方式。
+- 测试命令和结果：`mvn test -Dtest=ClothingCrudEndpointTest` 通过，Tests run: 6, Failures: 0, Errors: 0, Skipped: 0；`mvn test -Dtest=ClothingCrudEndpointTest,SecureUploadEndpointTest,StoredFileServiceConfigurationTest` 通过，Tests run: 13, Failures: 0, Errors: 0, Skipped: 0；`mvn test-compile` 通过；完整 `mvn test` 未通过，原因是当前 Docker/Testcontainers 环境不可用，7 个 Testcontainers 测试报 `Could not find a valid Docker environment`，新增 7A 与非 Docker 相关测试通过。
+- SPEC / PLAN 合规检查结论：通过；只完成 T7A，未实现 T7B 筛选、真实分页、待完善计数、颜色复用或 batch；满足衣物基础 CRUD、API contract、数据模型和用户隔离要求；未写入真实凭据。
+- 代码质量检查结论：通过；Critical issues 无；non-critical 建议包括后续补真实 DB 集成验证、统一非法 season 的 400 错误处理，以及后续扩展时拆分 `ClothingService` metadata helper。
+- finishing-a-development-branch 判断：开 PR；当前分支适合提交后创建 PR，但 CI / 本地 Docker 可用环境需复跑完整 Testcontainers 测试。
+- 人工干预和教训：用户要求快速收尾评审并明确 commit hash 待填写不阻塞 PR、README 仅必要时更新；教训是当 Docker/Testcontainers 不可用时，应保留不依赖 Docker 的核心行为测试，同时如实记录完整测试阻塞。
+- Commit hash：待填写。
+
 ## 2026-XX-XX HH:mm
 
 - Task 编号：

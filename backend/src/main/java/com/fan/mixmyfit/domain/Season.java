@@ -20,4 +20,8 @@ public enum Season implements DbEnum {
     static Season fromDbValue(String value) {
         return EnumConverter.fromDbValue(Season.class, value);
     }
+
+    public static Season fromApiValue(String value) {
+        return fromDbValue(value);
+    }
 }
