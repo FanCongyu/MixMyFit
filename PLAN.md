@@ -855,6 +855,24 @@
 
 ### T11：前端基线、Open Design 方向与 API Client
 
+**状态：** 已完成
+
+**分支 / worktree：** `task/11-frontend-baseline`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-11-frontend-baseline`
+
+**测试结果：**
+- TDD 红灯：`npm test -- --run` 在安装依赖后失败；`client.test.ts` 因缺少 API client 模块失败，`App.test.ts` 因 `/app` 未渲染 `衣橱工作台` 失败。
+- Task 相关测试：`npm test -- --run` 通过；Test Files: 2 passed；Tests: 3 passed。
+- 前端构建：`npm run build` 通过。
+- 顶层测试：`make test` 未执行成功，原因是当前 PowerShell 环境中 `make` 不在 PATH。
+
+**SPEC 合规检查：** 通过
+
+**代码质量检查：** 通过
+
+**完成分支决定：** 开 PR
+
+**Commit hash：** 待填写
+
 **目标：** 建立 Vue 应用结构、API client、路由壳和 Open Design 实现方向。
 
 **依赖关系：** T1。
