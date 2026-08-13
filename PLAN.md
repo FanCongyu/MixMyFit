@@ -970,6 +970,26 @@
 
 ### T13A：前端衣物库列表、筛选与待完善状态 UI
 
+**状态：** 已完成
+
+**分支 / worktree：** `task/13a-frontend-clothing-list`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-13a-frontend-clothing-list`
+
+**测试结果：**
+- TDD 红灯：`npm test -- --run src/views/clothing/__tests__/ClothingListView.test.ts` 初始失败，3 个测试因 `/clothes` 未渲染衣物列表 UI、缺少状态筛选和 fallback 名称失败；首次运行前 `vitest` 不在本地 `node_modules`，执行 `npm ci` 后确认红灯。
+- Task 相关前端测试：`npm test -- --run src/views/clothing/__tests__/ClothingListView.test.ts` 通过；Test Files: 1 passed；Tests: 3 passed。
+- 前端构建：`npm run build` 通过。
+- 前端全量测试：`npm test -- --run` 通过；Test Files: 7 passed；Tests: 13 passed。
+- 后端回归：使用本机 `.m2\wrapper` 中 Maven 可执行文件运行 `mvn test` 通过；Tests run: 72, Failures: 0, Errors: 0, Skipped: 0。
+- 顶层 `make test` 未直接运行，原因是当前 PowerShell 环境中 `make` 不在 PATH；已分别执行 Makefile 等价命令。
+
+**SPEC 合规检查：** 通过
+
+**代码质量检查：** 通过
+
+**完成分支决定：** 开 PR
+
+**Commit：** 待填写
+
 **目标：** 实现衣物库列表、筛选控件、待完善标识和待完善数量 UI。
 
 **依赖关系：** T7B、T11。
