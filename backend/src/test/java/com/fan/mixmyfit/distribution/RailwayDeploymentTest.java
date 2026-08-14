@@ -16,7 +16,7 @@ class RailwayDeploymentTest {
 
         assertThat(backendConfig)
                 .contains("\"builder\": \"DOCKERFILE\"")
-                .contains("\"healthcheckPath\": \"/actuator/health\"")
+                .contains("\"healthcheckPath\": \"/api/health\"")
                 .contains("\"restartPolicyType\": \"ON_FAILURE\"");
     }
 
@@ -46,7 +46,8 @@ class RailwayDeploymentTest {
 
         assertThat(application)
                 .contains("server:")
-                .contains("port: ${PORT:8080}");
+                .contains("port: ${PORT:8080}")
+                .contains("address: 0.0.0.0");
     }
 
     @Test
@@ -76,6 +77,9 @@ class RailwayDeploymentTest {
                 .contains("后端部署到 Railway")
                 .contains("VITE_API_BASE_URL")
                 .contains("Railway Public Domain")
+                .contains("Railway Healthcheck Path：`/api/health`")
+                .contains("Railway 变量值不要带双引号")
+                .contains("RAILWAY_HEALTHCHECK_TIMEOUT_SEC=300")
                 .doesNotContain("backend.railway.internal")
                 .doesNotContain("RAILWAY_PRIVATE_DOMAIN");
         assertThat(plan)

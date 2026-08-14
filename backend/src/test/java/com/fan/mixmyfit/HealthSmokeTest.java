@@ -28,4 +28,12 @@ class HealthSmokeTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).contains("\"status\":\"UP\"");
     }
+
+    @Test
+    void apiHealthEndpointIsAvailableWithoutDatabaseOrCookie() {
+        var response = restTemplate.getForEntity("/api/health", String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).contains("\"status\":\"UP\"");
+    }
 }
