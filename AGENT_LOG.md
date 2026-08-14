@@ -366,3 +366,17 @@
 - Commit hash：
 - 人工干预：
 - 我学到的教训：
+
+## 2026-08-14 22:41 +08:00
+
+- Task 编号和标题：T21 README、AGENT_LOG、PLAN 状态与最终文档检查。
+- 使用技能：`superpowers:using-superpowers`、`superpowers:executing-plans`、`superpowers:using-git-worktrees`、`superpowers:test-driven-development`。
+- 使用智能体：Codex。
+- 工作区 / 分支：`D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-21-docs-finalization`; `task/21-docs-finalization`; linked worktree。
+- 输入 prompt 摘要：只执行 `PLAN.md` 的 Task 21；只阅读 `SPEC.md` 中 Task 21 相关章节、`PLAN.md` 中 Task 21 完整内容以及当前 task 相关源码和测试文件。
+- Codex 输出摘要：新增最终文档检查测试，补齐 README 最终状态、目录结构、测试覆盖、部署限制说明；记录 T21 过程证据；更新 PLAN 最终检查清单和 T21 完成说明；未编写 `REFLECTION.md`。
+- 生成或修改的文件：`backend/src/test/java/com/fan/mixmyfit/distribution/DocumentationFinalizationTest.java`、`README.md`、`AGENT_LOG.md`、`PLAN.md`。
+- 测试结果：RED：`mvn test -Dtest=DocumentationFinalizationTest` 因当前 shell 中 `mvn` 不在 PATH 失败；改用本机 `.m2\wrapper` 中 Maven 可执行文件后，`DocumentationFinalizationTest` 3 tests / 3 failures，确认缺失 README 最终说明、AGENT_LOG T21 记录和 PLAN 最终 checklist。GREEN：`DocumentationFinalizationTest` 3 tests / 0 failures；`DocumentationFinalizationTest,RailwayDeploymentTest,DockerDistributionTest,CiWiringTest` 15 tests / 0 failures；完整后端 `mvn test` 92 tests / 0 failures；`npm run build` 通过；`npm test -- --run` 9 files / 33 tests passed；`docker compose config --quiet` 通过；README documented path check 通过；`git diff --check` 退出码 0，仅 CRLF/LF warning。
+- Commit hash：待提交后回填。
+- 人工干预：用户要求只执行 Task 21，并限制读取上下文；无真实凭据写入；`REFLECTION.md` 保留给学生本人撰写。
+- 我学到的教训：文档收尾也需要可重复的检查点；最终 README 不应残留早期实现阶段措辞，PLAN checklist 也要明确区分已验证事项和仍受外部部署环境限制的事项。
