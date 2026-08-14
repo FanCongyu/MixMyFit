@@ -286,7 +286,7 @@
 - 测试命令和结果：RED：`npm test -- --run src/views/outfit-editor/__tests__/OutfitEditorView.test.ts src/views/outfits/__tests__/OutfitsView.test.ts` 初次 4 failed；评审修复 RED：`npm test -- --run src/views/outfits/__tests__/OutfitsView.test.ts` 1 failed，缺少 `搭配内容` list。GREEN：`npm test -- --run src/views/outfits/__tests__/OutfitsView.test.ts` 通过，Test Files: 1 passed, Tests: 3 passed；`npm test -- --run src/views/outfit-editor/__tests__/OutfitEditorView.test.ts src/views/outfits/__tests__/OutfitsView.test.ts` 通过，Test Files: 2 passed, Tests: 14 passed；`npm run build` 通过；`npm test -- --run` 通过，Test Files: 9 passed, Tests: 32 passed。`make test` 未执行成功，原因是 PowerShell 环境中 `make` 不在 PATH；后端 Maven 全量测试尝试失败，原因是 Docker/Testcontainers 找不到有效 Docker 环境。
 - SPEC / PLAN 合规检查结论：通过；只完成 T16，满足 editor 保存 payload、空搭配客户端拦截、列表/详情/编辑/删除、tag+season 组合筛选、删除确认、API contract 和用户隔离前端边界；未实现 T17 E2E 或其他 task；未写入真实凭据。
 - 代码质量检查结论：通过；Critical issues 无。Non-critical：后续可抽取重复 `requestJson` helper；列表筛选当前为单标签 UI，后续如需要多标签筛选可扩展。
-- finishing-a-development-branch 判断：开 PR；Task 相关前端测试、全量前端测试和构建均通过，仓库级后端测试仅受本机 Docker/Testcontainers 环境阻塞；Commit hash：待填写。
+- finishing-a-development-branch 判断：开 PR；Task 相关前端测试、全量前端测试和构建均通过，仓库级后端测试仅受本机 Docker/Testcontainers 环境阻塞；Commit hash：b94e3fbc42399593f48409c08311214ce34a0158。
 - 人工干预和教训：用户要求先做快速收尾评审，并根据评审补齐“编辑搭配内容/items”；README 经评估无需更新。教训是“编辑内容和元数据”不能只理解为 metadata PATCH，详情页必须提供影响 `items` 的 UI 操作；前端异步选项测试要等待 option 出现后再交互。
 
 ## 2026-XX-XX HH:mm
