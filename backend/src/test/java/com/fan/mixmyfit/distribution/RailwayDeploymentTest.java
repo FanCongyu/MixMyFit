@@ -32,6 +32,7 @@ class RailwayDeploymentTest {
         assertThat(frontendDockerfile)
                 .contains("PORT=80")
                 .contains("BACKEND_ORIGIN")
+                .contains("mkdir -p /etc/nginx/templates")
                 .contains("/etc/nginx/templates/default.conf.template")
                 .contains("listen ${PORT};")
                 .doesNotContain("proxy_pass http://backend:8080/api/");
