@@ -15,6 +15,11 @@ const fixedCategories: CategoryFixture[] = [
   { categoryId: 3, name: '鞋子', type: 'fixed' },
   { categoryId: 4, name: '帽子', type: 'fixed' }
 ]
+const customCategories: CategoryFixture[] = [
+  { categoryId: 5, name: '项链', type: 'custom' },
+  { categoryId: 6, name: '包', type: 'custom' }
+]
+const categories = [...fixedCategories, ...customCategories]
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -51,7 +56,7 @@ function clothingItem(clothingId: number, name: string, category: CategoryFixtur
 function stubOutfitEditor(): ReturnType<typeof vi.fn> {
   const fetchMock = vi.fn((path: string) => {
     if (path === '/api/categories') {
-      return Promise.resolve(jsonResponse(fixedCategories))
+      return Promise.resolve(jsonResponse(categories))
     }
     if (path === '/api/clothing-tags') {
       return Promise.resolve(jsonResponse([
@@ -72,7 +77,9 @@ function stubOutfitEditor(): ReturnType<typeof vi.fn> {
         ],
         '2': [clothingItem(201, '黑长裤', fixedCategories[1])],
         '3': [],
-        '4': []
+        '4': [],
+        '5': [clothingItem(501, '珍珠项链', customCategories[0])],
+        '6': [clothingItem(601, '托特包', customCategories[1])]
       }
 
       return Promise.resolve(jsonResponse(clothingList(itemsByCategory[categoryId ?? ''] ?? [])))
@@ -164,5 +171,106 @@ describe('OutfitEditorView', () => {
 
     expect(within(topSlot).getByText('未选择衣物')).toBeTruthy()
     expect(within(bottomSlot).getByText('黑长裤')).toBeTruthy()
+  })
+
+  it('lists only custom categories as accessory candidates', async () => {
+    stubOutfitEditor()
+    window.history.pushState({}, '', '/outfit-editor')
+
+    render(App)
+
+    const accessoryCandidates = await screen.findByRole('region', { name: '配饰候选' })
+
+    expect(within(accessoryCandidates).getByRole('button', { name: '添加珍珠项链' })).toBeTruthy()
+    expect(within(accessoryCandidates).getByRole('button', { name: '添加托特包' })).toBeTruthy()
+    expect(within(accessoryCandidates).queryByRole('button', { name: '添加白衬衫' })).toBeNull()
+  })
+
+  it('keeps accessory position, size, and z-index in the save payload state after adding', async () => {
+    stubOutfitEditor()
+    window.history.pushState({}, '', '/outfit-editor')
+
+    render(App)
+
+    const accessoryCandidates = await screen.findByRole('region', { name: '配饰候选' })
+    await fireEvent.click(within(accessoryCandidates).getByRole('button', { name: '添加珍珠项链' }))
+
+    const accessoryLayer = screen.getByRole('region', { name: '配饰层' })
+    const accessory = within(accessoryLayer).getByRole('article', { name: '配饰 珍珠项链' })
+    await fireEvent.click(within(accessory).getByRole('button', { name: '右移珍珠项链' }))
+    await fireEvent.click(within(accessory).getByRole('button', { name: '下移珍珠项链' }))
+    await fireEvent.click(within(accessory).getByRole('button', { name: '上移一层珍珠项链' }))
+    await fireEvent.update(within(accessory).getByLabelText('珍珠项链尺寸'), 'large')
+
+    const payload = JSON.parse(screen.getByLabelText('配饰保存数据').textContent ?? '[]')
+    expect(payload).toEqual([
+      {
+        clothingId: 501,
+        role: 'accessory_overlay',
+        positionX: 10,
+        positionY: 10,
+        size: 'large',
+        zIndex: 2
+      }
+    ])
+  })
+
+  it('allows only small, medium, and large accessory sizes', async () => {
+    stubOutfitEditor()
+    window.history.pushState({}, '', '/outfit-editor')
+
+    render(App)
+
+    const accessoryCandidates = await screen.findByRole('region', { name: '配饰候选' })
+    await fireEvent.click(within(accessoryCandidates).getByRole('button', { name: '添加珍珠项链' }))
+
+    const sizeSelect = screen.getByLabelText('珍珠项链尺寸') as HTMLSelectElement
+
+    expect(Array.from(sizeSelect.options).map((option) => option.value)).toEqual([
+      'small',
+      'medium',
+      'large'
+    ])
+  })
+
+  it('removes an added accessory from the layer and payload state', async () => {
+    stubOutfitEditor()
+    window.history.pushState({}, '', '/outfit-editor')
+
+    render(App)
+
+    const accessoryCandidates = await screen.findByRole('region', { name: '配饰候选' })
+    await fireEvent.click(within(accessoryCandidates).getByRole('button', { name: '添加珍珠项链' }))
+
+    const accessoryLayer = screen.getByRole('region', { name: '配饰层' })
+    const accessory = within(accessoryLayer).getByRole('article', { name: '配饰 珍珠项链' })
+    await fireEvent.click(within(accessory).getByRole('button', { name: '移除珍珠项链' }))
+
+    expect(within(accessoryLayer).queryByRole('article', { name: '配饰 珍珠项链' })).toBeNull()
+    expect(JSON.parse(screen.getByLabelText('配饰保存数据').textContent ?? '[]')).toEqual([])
+  })
+
+  it('updates accessory position when dragging inside the accessory layer', async () => {
+    stubOutfitEditor()
+    window.history.pushState({}, '', '/outfit-editor')
+
+    render(App)
+
+    const accessoryCandidates = await screen.findByRole('region', { name: '配饰候选' })
+    await fireEvent.click(within(accessoryCandidates).getByRole('button', { name: '添加珍珠项链' }))
+
+    const accessoryLayer = screen.getByRole('region', { name: '配饰层' })
+    const accessory = within(accessoryLayer).getByRole('article', { name: '配饰 珍珠项链' })
+    await fireEvent.dragStart(accessory)
+    const dropEvent = new Event('drop', { bubbles: true, cancelable: true })
+    Object.defineProperty(dropEvent, 'clientX', { value: 30 })
+    Object.defineProperty(dropEvent, 'clientY', { value: 20 })
+    await fireEvent(accessoryLayer, dropEvent)
+
+    const payload = JSON.parse(screen.getByLabelText('配饰保存数据').textContent ?? '[]')
+    expect(payload[0]).toEqual(expect.objectContaining({
+      positionX: 30,
+      positionY: 20
+    }))
   })
 })
