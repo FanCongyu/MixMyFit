@@ -8,7 +8,37 @@
     </header>
 
     <p v-if="error" class="form-message form-message--error" role="alert">{{ error }}</p>
+    <p v-if="saveMessage" class="form-message">{{ saveMessage }}</p>
     <p v-if="loading">正在加载搭配槽位...</p>
+
+    <form v-if="!loading" class="outfit-save-panel" aria-label="搭配保存信息" @submit.prevent="saveOutfit">
+      <label>
+        方案名称
+        <input v-model="title" type="text" />
+      </label>
+      <label>
+        备注
+        <textarea v-model="note" rows="3" />
+      </label>
+      <label>
+        搭配季节
+        <select v-model="selectedSeasons" multiple>
+          <option value="spring">春</option>
+          <option value="summer">夏</option>
+          <option value="autumn">秋</option>
+          <option value="winter">冬</option>
+        </select>
+      </label>
+      <label>
+        搭配标签
+        <select v-model="selectedOutfitTagIds" multiple>
+          <option v-for="tag in outfitTags" :key="tag.tagId" :value="String(tag.tagId)">
+            {{ tag.name }}
+          </option>
+        </select>
+      </label>
+      <button type="submit" :disabled="saving">保存搭配</button>
+    </form>
 
     <div v-if="!loading" class="outfit-slot-grid">
       <OutfitMainSlot
@@ -196,6 +226,7 @@ import {
   type ClothingListFilters,
   type ClothingTag
 } from '../../api/clothing'
+import { createOutfit, listOutfitTags, type OutfitItemPayload, type OutfitTag } from '../../api/outfit'
 import OutfitMainSlot from '../../components/outfit/OutfitMainSlot.vue'
 
 type MainSlotKey = 'top' | 'bottom' | 'shoes' | 'hat'
@@ -243,13 +274,20 @@ const candidateFilters = reactive<Pick<ClothingListFilters, 'color' | 'season' |
 })
 const colors = ref<string[]>([])
 const tags = ref<ClothingTag[]>([])
+const outfitTags = ref<OutfitTag[]>([])
 const accessoryCandidates = ref<ClothingItem[]>([])
 const accessories = ref<AccessoryOverlay[]>([])
+const title = ref('')
+const note = ref('')
+const selectedSeasons = ref<string[]>([])
+const selectedOutfitTagIds = ref<string[]>([])
 const nextAccessoryId = ref(1)
 const draggedAccessoryId = ref<number | null>(null)
 const activeSlotKey = ref<MainSlotKey | null>(null)
 const loading = ref(true)
+const saving = ref(false)
 const error = ref('')
+const saveMessage = ref('')
 
 const activeSlot = computed(() =>
   mainSlots.value.find((slot) => slot.key === activeSlotKey.value) ?? null
@@ -274,13 +312,15 @@ onMounted(async () => {
   error.value = ''
 
   try {
-    const [categories, nextColors, nextTags] = await Promise.all([
+    const [categories, nextColors, nextTags, nextOutfitTags] = await Promise.all([
       listCategories(),
       listClothingColors(),
-      listClothingTags()
+      listClothingTags(),
+      listOutfitTags()
     ])
     colors.value = nextColors
     tags.value = nextTags
+    outfitTags.value = nextOutfitTags
     mainSlots.value = mainSlots.value.map((slot) => ({
       ...slot,
       categoryId: String(categories.find((category) =>
@@ -434,5 +474,61 @@ function dropAccessory(event: DragEvent): void {
   accessory.positionX = Math.round(event.clientX)
   accessory.positionY = Math.round(event.clientY)
   draggedAccessoryId.value = null
+}
+
+function mainSlotPayload(): OutfitItemPayload[] {
+  return mainSlots.value
+    .map((slot): OutfitItemPayload | null => {
+      const item = selectedBySlot.value[slot.key]
+      if (!item) {
+        return null
+      }
+
+      return {
+        clothingId: item.clothingId,
+        role: 'main_slot',
+        slot: slot.key,
+        positionX: null,
+        positionY: null,
+        size: null,
+        zIndex: null
+      }
+    })
+    .filter((item): item is OutfitItemPayload => item !== null)
+}
+
+function accessorySavePayload(): OutfitItemPayload[] {
+  return accessoryPayload.value.map((accessory) => ({
+    ...accessory,
+    slot: null
+  }))
+}
+
+async function saveOutfit(): Promise<void> {
+  const items = [...mainSlotPayload(), ...accessorySavePayload()]
+  error.value = ''
+  saveMessage.value = ''
+
+  if (!items.length) {
+    error.value = '至少选择一件衣物或配饰'
+    return
+  }
+
+  saving.value = true
+
+  try {
+    const response = await createOutfit({
+      title: title.value.trim(),
+      note: note.value.trim(),
+      seasons: selectedSeasons.value,
+      tagIds: selectedOutfitTagIds.value.map((tagId) => Number(tagId)),
+      items
+    })
+    saveMessage.value = `已保存 ${response.title}`
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : '无法保存搭配。'
+  } finally {
+    saving.value = false
+  }
 }
 </script>

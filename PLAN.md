@@ -1190,6 +1190,20 @@
 
 ### T16：前端搭配方案列表、详情、编辑、删除与筛选
 
+**状态：** 已完成
+
+**分支 / worktree：** `task/16-frontend-outfits`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-16-frontend-outfits`
+
+**测试结果：** TDD 红灯：新增空编辑器保存、部分搭配保存 payload、搭配列表 tag+season 筛选、删除确认测试后，Task 16 focused tests 初次 4 failed；快速评审补充“移除衣物后 PATCH items”测试并确认红灯，缺少 `搭配内容` list。绿灯：`npm test -- --run src/views/outfits/__tests__/OutfitsView.test.ts` 通过，Test Files: 1 passed, Tests: 3 passed；`npm test -- --run src/views/outfit-editor/__tests__/OutfitEditorView.test.ts src/views/outfits/__tests__/OutfitsView.test.ts` 通过，Test Files: 2 passed, Tests: 14 passed；`npm run build` 通过；`npm test -- --run` 通过，Test Files: 9 passed, Tests: 32 passed。`make test` 未执行成功，原因是当前 PowerShell 环境中 `make` 不在 PATH；后端 Maven 全量测试尝试失败，原因是 Docker/Testcontainers 找不到有效 Docker 环境。
+
+**SPEC 合规检查：** 通过
+
+**代码质量检查：** 通过
+
+**完成分支决定：** 开 PR
+
+**Commit hash：** 待填写
+
 **目标：** 实现从编辑器保存搭配方案，以及搭配方案列表、详情、编辑、删除和筛选 UI。
 
 **依赖关系：** T10、T15。

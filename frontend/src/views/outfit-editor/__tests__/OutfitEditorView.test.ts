@@ -67,6 +67,12 @@ function stubOutfitEditor(): ReturnType<typeof vi.fn> {
     if (path === '/api/clothes/colors') {
       return Promise.resolve(jsonResponse(['白色', '黑色']))
     }
+    if (path === '/api/outfit-tags') {
+      return Promise.resolve(jsonResponse([
+        { tagId: 301, name: '通勤', kind: 'outfit' },
+        { tagId: 302, name: '旅行', kind: 'outfit' }
+      ]))
+    }
     if (path.startsWith('/api/clothes')) {
       const url = new URL(path, 'http://local.test')
       const categoryId = url.searchParams.get('categoryId')
@@ -83,6 +89,27 @@ function stubOutfitEditor(): ReturnType<typeof vi.fn> {
       }
 
       return Promise.resolve(jsonResponse(clothingList(itemsByCategory[categoryId ?? ''] ?? [])))
+    }
+
+    return Promise.resolve(jsonResponse({}))
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  return fetchMock
+}
+
+function stubEmptyOutfitEditor(): ReturnType<typeof vi.fn> {
+  const fetchMock = vi.fn((path: string) => {
+    if (path === '/api/categories') {
+      return Promise.resolve(jsonResponse(categories))
+    }
+    if (path === '/api/clothing-tags' || path === '/api/outfit-tags') {
+      return Promise.resolve(jsonResponse([]))
+    }
+    if (path === '/api/clothes/colors') {
+      return Promise.resolve(jsonResponse([]))
+    }
+    if (path.startsWith('/api/clothes')) {
+      return Promise.resolve(jsonResponse(clothingList([])))
     }
 
     return Promise.resolve(jsonResponse({}))
@@ -272,5 +299,75 @@ describe('OutfitEditorView', () => {
       positionX: 30,
       positionY: 20
     }))
+  })
+
+  it('shows an error and does not call the API when saving an empty outfit', async () => {
+    const fetchMock = stubEmptyOutfitEditor()
+    window.history.pushState({}, '', '/outfit-editor')
+
+    render(App)
+
+    await screen.findByRole('heading', { name: '搭配编辑器' })
+    await fireEvent.click(await screen.findByRole('button', { name: '保存搭配' }))
+
+    expect((await screen.findByRole('alert')).textContent).toContain('至少选择一件衣物或配饰')
+    expect(fetchMock.mock.calls.some(([path]) => path === '/api/outfits')).toBe(false)
+  })
+
+  it('sends the expected payload when saving a partial outfit', async () => {
+    const fetchMock = stubOutfitEditor()
+    window.history.pushState({}, '', '/outfit-editor')
+
+    render(App)
+
+    const bottomSlot = await screen.findByRole('region', { name: '下装槽位' })
+    await fireEvent.click(within(bottomSlot).getByRole('button', { name: '清空下装' }))
+    await fireEvent.update(screen.getByLabelText('方案名称'), '周一通勤')
+    await fireEvent.update(screen.getByLabelText('备注'), '只保存上装和一个配饰')
+    await fireEvent.update(screen.getByLabelText('搭配季节'), 'spring')
+    await fireEvent.update(screen.getByLabelText('搭配标签'), '301')
+
+    const accessoryCandidates = screen.getByRole('region', { name: '配饰候选' })
+    await fireEvent.click(within(accessoryCandidates).getByRole('button', { name: '添加珍珠项链' }))
+    const accessory = screen.getByRole('article', { name: '配饰 珍珠项链' })
+    await fireEvent.click(within(accessory).getByRole('button', { name: '右移珍珠项链' }))
+    await fireEvent.click(within(accessory).getByRole('button', { name: '上移一层珍珠项链' }))
+
+    await fireEvent.click(screen.getByRole('button', { name: '保存搭配' }))
+
+    await waitFor(() => {
+      const saveCall = fetchMock.mock.calls.find(([path]) => path === '/api/outfits')
+      expect(saveCall).toBeTruthy()
+      expect(saveCall?.[1]).toMatchObject({
+        method: 'POST',
+        headers: expect.objectContaining({ 'Content-Type': 'application/json' })
+      })
+      expect(JSON.parse(String(saveCall?.[1]?.body))).toEqual({
+        title: '周一通勤',
+        note: '只保存上装和一个配饰',
+        seasons: ['spring'],
+        tagIds: [301],
+        items: [
+          {
+            clothingId: 101,
+            role: 'main_slot',
+            slot: 'top',
+            positionX: null,
+            positionY: null,
+            size: null,
+            zIndex: null
+          },
+          {
+            clothingId: 501,
+            role: 'accessory_overlay',
+            slot: null,
+            positionX: 10,
+            positionY: 0,
+            size: 'medium',
+            zIndex: 2
+          }
+        ]
+      })
+    })
   })
 })

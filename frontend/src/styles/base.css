@@ -303,6 +303,66 @@ dd {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
+.outfit-save-panel {
+  align-items: end;
+  background: #ffffff;
+  border: 1px solid #d8dee6;
+  border-radius: 8px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  padding: 16px;
+}
+
+.outfit-save-panel label,
+.outfits-filters label,
+.outfit-edit-form label {
+  display: grid;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.outfit-save-panel input,
+.outfit-save-panel select,
+.outfit-save-panel textarea,
+.outfits-filters select,
+.outfit-edit-form input,
+.outfit-edit-form select,
+.outfit-edit-form textarea {
+  border: 1px solid #c8d0d9;
+  border-radius: 6px;
+  color: #1f2933;
+  font: inherit;
+  min-height: 40px;
+  padding: 8px 10px;
+}
+
+.outfit-save-panel textarea,
+.outfit-edit-form textarea {
+  resize: vertical;
+}
+
+.outfit-save-panel button,
+.outfits-list button,
+.outfit-edit-form button {
+  background: #175cd3;
+  border: 0;
+  border-radius: 6px;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  min-height: 40px;
+  padding: 8px 12px;
+}
+
+.outfit-save-panel button:disabled,
+.outfit-edit-form button:disabled {
+  background: #c8d0d9;
+  cursor: not-allowed;
+}
+
 .outfit-slot {
   background: #ffffff;
   border: 1px solid #d8dee6;
@@ -502,4 +562,96 @@ dd {
   position: absolute;
   white-space: nowrap;
   width: 1px;
+}
+
+.outfits-view {
+  display: grid;
+  gap: 24px;
+}
+
+.outfits-view__header {
+  align-items: end;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.outfits-view__header p,
+.outfits-list__item p,
+.outfits-view__empty {
+  color: #526070;
+  margin: 0;
+}
+
+.outfits-filters,
+.outfit-edit-form {
+  align-items: end;
+  background: #ffffff;
+  border: 1px solid #d8dee6;
+  border-radius: 8px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  padding: 16px;
+}
+
+.outfits-list {
+  display: grid;
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.outfits-list__item {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #d8dee6;
+  border-radius: 8px;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding: 14px;
+}
+
+.outfits-list__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.outfit-content-list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.outfit-content-list__item {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #d8dee6;
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 12px;
+}
+
+.outfit-content-list__item button {
+  background: #e7eaee;
+  border: 0;
+  border-radius: 6px;
+  color: #1f2933;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  min-height: 36px;
+  padding: 8px 12px;
+}
+
+.outfit-detail {
+  display: grid;
+  gap: 16px;
 }
