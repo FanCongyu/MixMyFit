@@ -6,7 +6,7 @@ MixMyFit 是一个个人衣橱搭配管理 Web 应用，面向希望数字化管
 
 用户可以上传自己的衣物图片，按品类、颜色、季节和标签管理衣物，并在搭配编辑器中组合、预览、保存和复用穿搭方案。项目目标是减少用户反复试穿或手工拼图的成本，让用户能基于自己的真实衣物图片完成搭配规划。
 
-本项目是 AI4SE 期末项目 B（非 harness 应用类项目）。当前已完成 SPEC、PLAN、冷启动验证、后端认证与个人资料 API、衣物与搭配核心 API、前端核心页面、核心 E2E、Docker Compose 本地分发、GitHub Actions CI，以及 Vercel + Railway 部署准备；Vercel 前端公网 WebUI URL 已记录，Railway 后端部署仍需线上 smoke 验证。
+本项目是 AI4SE 期末项目 B（非 harness 应用类项目）。当前已完成 SPEC、PLAN、冷启动验证、后端认证与个人资料 API、衣物与搭配核心 API、前端核心页面、核心 E2E、Docker Compose 本地分发、GitHub Actions CI，以及 Vercel + Railway 部署准备；Vercel 前端公网 WebUI URL 已记录，Railway 后端部署仍需完成真实服务发布并运行线上 smoke 验证。
 
 ## 目标用户
 
@@ -82,7 +82,7 @@ SPEC 阶段确定的 MVP 功能包括：
 
 ## 目录结构
 
-当前仓库处于实现早期阶段，已包含项目骨架、数据库迁移、JPA/Repository 映射、后端认证 / 个人资料 API 和前端认证 / 个人资料页面，主要文件包括：
+当前仓库已包含后端、前端、测试、分发和部署准备文件，主要结构如下：
 
 ```text
 .
@@ -113,10 +113,18 @@ SPEC 阶段确定的 MVP 功能包括：
 │       │   └── db/migration/V1__initial_schema.sql
 │       └── test/java/com/fan/mixmyfit/
 │           ├── HealthSmokeTest.java
-│           └── domain/
-│               ├── MigrationScriptTest.java
-│               ├── RepositoryMappingTest.java
-│               └── SchemaMigrationTest.java
+│           ├── auth/
+│           ├── category/
+│           ├── clothing/
+│           ├── distribution/
+│           ├── domain/
+│           ├── e2e/
+│           ├── file/
+│           ├── outfit/
+│           ├── security/
+│           ├── support/
+│           ├── tag/
+│           └── user/
 ├── frontend/
 │   ├── Dockerfile
 │   ├── vercel.json
@@ -247,14 +255,15 @@ GitHub Actions CI：
 - 后端数据库：Flyway 可在 Testcontainers MySQL 上干净执行 `V1__initial_schema.sql`，并验证必需表、关键字段、唯一约束、枚举约束和跨用户归属约束。
 - 后端 Repository：JPA Entity 与 Spring Data Repository 可在 Testcontainers MySQL 上保存和读取核心对象，并验证 draft 衣物、标签唯一约束和 `outfit_items` 外键约束。
 - 后端认证：`POST /api/auth/register`、`POST /api/auth/login`、`POST /api/auth/logout`，覆盖 BCrypt 密码哈希、重复用户名、统一登录失败信息、`MMF_SESSION` HttpOnly Cookie、7 天过期、`SameSite=Lax` 和登出清理。
-- 前端：Vue 应用壳渲染 `MixMyFit`，`/app` 渲染已登录应用壳占位 route，API client 默认使用 Cookie credentials；认证 UI 覆盖登录、注册、退出本地状态清理；个人资料 UI 覆盖 username/nickname 渲染、昵称修改成功/错误状态、密码修改必填校验和密码值不写入日志。
+- 后端业务 API：品类、衣物标签、搭配标签、衣物上传、图片访问、衣物详情/列表/批量更新、搭配创建/查看/列表/编辑/删除，并覆盖当前用户归属约束。
+- 前端：Vue 应用壳、API client Cookie credentials、注册/登录/退出、个人资料、衣物库筛选、批量上传反馈、待完善提醒、批量补全、搭配编辑器固定主槽位、配饰层、搭配保存、搭配列表/详情/编辑/删除和筛选。
 - E2E：`CoreFlowE2eTest` 覆盖注册、登录、上传两张衣物图片、批量补全品类/颜色/季节/标签、创建搭配、保存搭配、按标签筛选，以及用户 A 不能直接访问用户 B 的衣物或搭配方案。
 
 ## 前端 Open Design 方向
 
 T11 前端基线采用面向衣橱管理工具的 Open Design 方向：第一屏直接进入应用壳，不做营销式 landing page；整体以安静、实用、可扫描的工作台体验为目标。后续 UI 应延续克制的中性色底、清晰层级、稳定尺寸控件和受控图片容器，并通过 `object-fit`、固定展示区域和懒加载约束衣物图片展示。当前仅记录设计方向和基础结构，不表示最终业务 UI 已完成。
 
-CI wiring 由后端仓库检查测试覆盖。
+CI、Docker、Railway/Vercel 和最终文档要求由 `backend/src/test/java/com/fan/mixmyfit/distribution/` 下的仓库检查测试覆盖。
 
 ## 分发与部署
 
@@ -337,3 +346,4 @@ T3A 认证会话实现使用后端设置的 `MMF_SESSION` Cookie。Cookie 本地
 - 当前 Compose 配置使用本地开发默认密码；生产环境必须改用部署平台 Secret 或受控环境变量。
 - Vercel + Railway 部署准备已完成，Vercel 前端公网 WebUI URL 已记录；Railway 后端/MySQL 服务、变量和域名完成后仍需运行线上 smoke check。
 - 当前开发机 shell 中 `make` 不在 PATH；需要配置 GNU Make 后才能直接运行 `make test` 和 `make test-e2e`。当前可用替代命令是 `mingw32-make test` 和 `mingw32-make test-e2e`。
+- 本地 `docker compose up --build` 曾受 Docker Hub token endpoint 外部网络超时阻塞；仓库已通过 `docker compose config --quiet` 和 Docker 分发测试验证配置结构，完整运行仍依赖基础镜像可拉取。
