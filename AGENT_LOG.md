@@ -258,7 +258,7 @@
 - 测试命令和结果：`npm test -- --run src/views/outfit-editor/__tests__/OutfitEditorView.test.ts` 红灯确认 4 failed，最终通过，Test Files: 1 passed, Tests: 4 passed；`npm test -- --run` 通过，Test Files: 8 passed, Tests: 22 passed；`npm run build` 通过；`make test` 未执行成功，原因是当前 PowerShell 环境中 `make` 不在 PATH。
 - SPEC / PLAN 合规检查结论：通过；只完成 T14，满足四个固定主槽位、ready 候选、按 category/color/season/tags 筛选、清空当前槽位、受控图片展示和完成标准；未实现 T15 配饰或 T16 保存；未写入真实凭据。
 - 代码质量检查结论：通过；Critical issues 无。Non-critical：筛选失败态可后续补错误反馈；候选筛选状态目前在槽位间共享，后续可按体验需要重置或按槽位保存；提交前需整理 staged/unstaged 状态。
-- finishing-a-development-branch 判断：开 PR；Task 相关测试、前端全量测试和构建均通过，当前分支适合提交后创建 PR；Commit hash：待填写。
+- finishing-a-development-branch 判断：开 PR；Task 相关测试、前端全量测试和构建均通过，当前分支适合提交后创建 PR；Commit hash：3bb216d7f733604c16750c65b0af8867c4c4b0b4。
 - 人工干预和教训：用户要求先做快速收尾评审，再仅修改 `AGENT_LOG.md`、`PLAN.md` 和必要时的 README；README 经评估无需更新。教训是前端异步加载测试要等待真实内容就绪，而不是只等待容器出现；多选 select 测试需要显式设置 option selected 后触发 change。
 
 ## 2026-XX-XX HH:mm
