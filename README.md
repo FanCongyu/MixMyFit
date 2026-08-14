@@ -272,8 +272,11 @@ CI wiring 由后端仓库检查测试覆盖。
 Railway 后端服务配置要点：
 
 - Backend root directory：`backend`
+- Railway Healthcheck Path：`/api/health`
 - Backend volume mount：`/app/uploads`
-- Backend 变量：`SPRING_DATASOURCE_URL`、`SPRING_DATASOURCE_USERNAME`、`SPRING_DATASOURCE_PASSWORD`、`UPLOAD_DIR=/app/uploads`、`MIXMYFIT_AUTH_COOKIE_SECURE=true`、`MIXMYFIT_AUTH_COOKIE_SAME_SITE=None`、`MIXMYFIT_CORS_ALLOWED_ORIGINS=<vercel-public-origin>`
+- Backend 变量：`SPRING_DATASOURCE_URL`、`SPRING_DATASOURCE_USERNAME`、`SPRING_DATASOURCE_PASSWORD`、`UPLOAD_DIR=/app/uploads`、`PORT=8080`、`MIXMYFIT_AUTH_COOKIE_SECURE=true`、`MIXMYFIT_AUTH_COOKIE_SAME_SITE=None`、`MIXMYFIT_CORS_ALLOWED_ORIGINS=<vercel-public-origin>`
+- Railway 变量值不要带双引号。
+- 如 Railway 后端启动慢，可设置 `RAILWAY_HEALTHCHECK_TIMEOUT_SEC=300`。
 
 不要把 Railway Token、MySQL 密码或任何真实生产凭据写入仓库。数据库连接值应在 Railway Variables 中引用 Railway MySQL 提供的变量。
 
@@ -292,13 +295,13 @@ Vercel 前端服务配置要点：
 ```powershell
 $env:MIXMYFIT_WEBUI_URL="https://<vercel-frontend-public-domain>"
 $env:MIXMYFIT_API_BASE_URL="https://<railway-backend-public-domain>"
-$env:MIXMYFIT_HEALTH_URL="https://<railway-backend-public-domain>/actuator/health"
+$env:MIXMYFIT_HEALTH_URL="https://<railway-backend-public-domain>/api/health"
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File e2e/railway-smoke.ps1
 ```
 
 Smoke checklist 覆盖：
 
-- 后端 `/actuator/health` 返回 `UP`。
+- 后端 `/api/health` 返回 `UP`。
 - 前端 WebUI 返回 Vue 入口页。
 - 通过 Railway 后端 Public Domain 注册临时 smoke 用户后登录，验证 `MMF_SESSION` Cookie 包含 `HttpOnly`、`Secure`、`SameSite=None`。
 
