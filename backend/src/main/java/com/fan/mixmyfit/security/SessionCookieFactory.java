@@ -11,9 +11,13 @@ public class SessionCookieFactory {
     private static final Duration SESSION_TTL = Duration.ofDays(7);
 
     private final boolean secureCookie;
+    private final String sameSite;
 
-    public SessionCookieFactory(@Value("${mixmyfit.auth.cookie-secure:false}") boolean secureCookie) {
+    public SessionCookieFactory(
+            @Value("${mixmyfit.auth.cookie-secure:false}") boolean secureCookie,
+            @Value("${mixmyfit.auth.cookie-same-site:Lax}") String sameSite) {
         this.secureCookie = secureCookie;
+        this.sameSite = sameSite;
     }
 
     public ResponseCookie createSessionCookie(String sessionId) {
@@ -33,6 +37,6 @@ public class SessionCookieFactory {
                 .path("/")
                 .httpOnly(true)
                 .secure(secureCookie)
-                .sameSite("Lax");
+                .sameSite(sameSite);
     }
 }

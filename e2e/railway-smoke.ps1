@@ -14,6 +14,7 @@ function Invoke-JsonPost([string] $Url, [hashtable] $Body) {
 }
 
 $WebUiUrl = Require-Env "MIXMYFIT_WEBUI_URL"
+$ApiBaseUrl = Require-Env "MIXMYFIT_API_BASE_URL"
 $HealthUrl = Require-Env "MIXMYFIT_HEALTH_URL"
 
 $HealthResponse = Invoke-WebRequest -Uri $HealthUrl -Method Get -UseBasicParsing -TimeoutSec 30
@@ -32,8 +33,8 @@ if ($WebResponse.StatusCode -ne 200 -or $WebResponse.Content -notmatch 'id="app"
 
 $SmokeUsername = "smoke-" + [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
 $SmokePassword = "Smoke123!"
-$RegisterUrl = "$WebUiUrl/api/auth/register"
-$LoginUrl = "$WebUiUrl/api/auth/login"
+$RegisterUrl = "$ApiBaseUrl/api/auth/register"
+$LoginUrl = "$ApiBaseUrl/api/auth/login"
 
 Invoke-JsonPost $RegisterUrl @{
     username = $SmokeUsername
@@ -48,10 +49,10 @@ $LoginResponse = Invoke-JsonPost $LoginUrl @{
 }
 
 $SetCookie = $LoginResponse.Headers["Set-Cookie"] -join "; "
-foreach ($Expected in @("MMF_SESSION", "HttpOnly", "Secure", "SameSite=Lax")) {
+foreach ($Expected in @("MMF_SESSION", "HttpOnly", "Secure", "SameSite=None")) {
     if ($SetCookie -notmatch [regex]::Escape($Expected)) {
         throw "Login Set-Cookie header did not include $Expected"
     }
 }
 
-Write-Host "Railway smoke check passed: health, WebUI, and MMF_SESSION cookie flags verified."
+Write-Host "Vercel + Railway smoke check passed: health, WebUI, and MMF_SESSION cookie flags verified."

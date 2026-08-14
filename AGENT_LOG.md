@@ -345,6 +345,14 @@
 - 阻塞问题：当前环境未安装 Railway CLI，也没有 Railway 项目访问凭据或公网域名，无法完成真实线上部署和 URL 记录。
 - 人工干预和教训：用户先要求推荐平台，随后确认 Railway。教训是 Task 20 的自动化验证应区分“部署准备配置可测”和“真实公网部署需平台访问”两部分；Cookie flags 要通过线上 smoke 脚本验证，不能只靠本地单元测试推断。
 
+## 2026-08-14 20:15 +08:00
+
+- Task 编号和标题：T20 部署适配调整：Vercel 前端 + Railway 后端/MySQL。
+- 触发原因：Railway 前端服务使用 private upstream 时出现 `host not found in upstream "backend.railway.internal"`，用户明确要求停止修复 frontend nginx upstream，不再依赖 Railway private domain。
+- 调整摘要：前端部署改为 Vercel，API client 读取 `VITE_API_BASE_URL`；后端继续 Railway + Railway MySQL，并新增 CORS allowed origins 配置和 `MIXMYFIT_AUTH_COOKIE_SAME_SITE=None` 支持；新增 `frontend/.env.example` 和 `frontend/vercel.json`；删除 `frontend/railway.json`；README/PLAN 更新为 Vercel + Railway 方案。
+- 测试结果：RED：`npm test -- --run src/api/client.test.ts` 初次 1 failed，仍请求 `/api/profile`；`mvn test -Dtest=RailwayDeploymentTest,DeploymentSecurityConfigTest` 初次 testCompile 失败，`SessionCookieFactory` 不支持 sameSite 参数。GREEN：前端 client focused test 2 passed；后端部署/security focused tests 8 passed；`npm run build` 通过；`npm test -- --run` 通过，9 files / 33 tests；后端相关测试通过，19 tests / 0 failures；残留扫描未发现 `backend.railway.internal`、`RAILWAY_PRIVATE_DOMAIN`、`BACKEND_ORIGIN` 或 “前端部署 Railway”。
+- 人工干预和教训：用户确认允许后端跨域/Cookie 部署适配。教训是 Vercel 浏览器端前端不能使用 Railway private domain；跨站 Cookie 需要同时配置 `SameSite=None; Secure` 和 credentials CORS。
+
 ## 2026-XX-XX HH:mm
 
 - Task 编号：
