@@ -1290,6 +1290,16 @@
 
 ### T18：Docker Compose 分发
 
+**状态：** 已完成。
+
+**完成记录：**
+- 分支 / worktree：`task/18-docker-compose`；`D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-18-docker-compose`。
+- 测试结果：`mvn test -Dtest=DockerDistributionTest` 通过，4 tests, 0 failures；`docker compose config --quiet` 通过；`mingw32-make test` 通过，后端 78 tests / 0 failures，前端 9 files / 32 tests passed。`docker compose up --build -d` 受 Docker Hub token endpoint 外部网络超时阻塞，未创建容器。
+- SPEC 合规检查：通过。
+- 代码质量检查：通过。
+- 完成分支决定：开 PR。
+- Commit hash：待填写。
+
 **目标：** 提供前端、后端、MySQL 和持久化上传目录的容器化本地分发方式。
 
 **依赖关系：** T17。

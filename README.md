@@ -6,7 +6,7 @@ MixMyFit 是一个个人衣橱搭配管理 Web 应用，面向希望数字化管
 
 用户可以上传自己的衣物图片，按品类、颜色、季节和标签管理衣物，并在搭配编辑器中组合、预览、保存和复用穿搭方案。项目目标是减少用户反复试穿或手工拼图的成本，让用户能基于自己的真实衣物图片完成搭配规划。
 
-本项目是 AI4SE 期末项目 B（非 harness 应用类项目）。当前已完成 SPEC、PLAN、冷启动验证、T1 项目骨架、T2A 数据库迁移验证、T2B JPA/Repository 映射验证、T3A/T3B 后端认证与个人资料 API、T11 前端基线和 T12 前端认证与个人资料页面；尚未进入衣物、搭配、Docker、CI 或部署实现。
+本项目是 AI4SE 期末项目 B（非 harness 应用类项目）。当前已完成 SPEC、PLAN、冷启动验证、后端认证与个人资料 API、衣物与搭配核心 API、前端核心页面、核心 E2E，以及 Docker Compose 本地分发；尚未完成 CI 或线上部署。
 
 ## 目标用户
 
@@ -63,7 +63,8 @@ SPEC 阶段确定的 MVP 功能包括：
 - [x] 实现后端个人资料查看、昵称修改和密码修改 API
 - [x] 建立前端应用壳、placeholder route 和 Cookie credentials API client
 - [x] 实现前端注册、登录、退出、个人资料、昵称修改和密码修改页面
-- [ ] 实现核心功能
+- [x] 实现核心功能
+- [x] 提供 Docker Compose 本地分发
 - [ ] 配置测试与 CI
 - [ ] 完成部署与分发
 
@@ -91,10 +92,12 @@ SPEC 阶段确定的 MVP 功能包括：
 ├── AGENT_LOG.md
 ├── REFLECTION.md
 ├── Makefile
+├── docker-compose.yml
 ├── e2e/
 │   ├── README.md
 │   └── run-backend-e2e.ps1
 ├── backend/
+│   ├── Dockerfile
 │   ├── pom.xml
 │   └── src/
 │       ├── main/java/com/fan/mixmyfit/MixMyFitApplication.java
@@ -110,6 +113,7 @@ SPEC 阶段确定的 MVP 功能包括：
 │               ├── RepositoryMappingTest.java
 │               └── SchemaMigrationTest.java
 ├── frontend/
+│   ├── Dockerfile
 │   ├── package.json
 │   ├── package-lock.json
 │   ├── index.html
@@ -133,11 +137,61 @@ SPEC 阶段确定的 MVP 功能包括：
 └── src/
 ```
 
-后续实现阶段仍计划创建 `docker-compose.yml` 和 `.gitlab-ci.yml` 等文件。
+后续实现阶段仍计划创建 `.gitlab-ci.yml` 等文件。
 
 ## 安装与运行
 
-当前已有最小项目骨架、数据库迁移、JPA/Repository 映射、后端认证 / 个人资料 API、前端基线和前端认证 / 个人资料页面。衣物管理、搭配编辑器、E2E、CI 和部署仍未完成。
+当前已有后端 API、前端页面、核心 E2E 和 Docker Compose 本地分发。CI 和线上部署仍未完成。
+
+### Docker Compose 本地启动
+
+首次启动完整本地系统：
+
+```bash
+docker compose up --build
+```
+
+启动后：
+
+- 前端：`http://localhost:5173`
+- 后端健康检查：`http://localhost:8080/actuator/health`
+- MySQL：仅在 compose 网络内暴露给后端服务。
+
+停止容器：
+
+```bash
+docker compose down
+```
+
+停止并删除持久化数据卷（会清空 MySQL 数据和上传文件）：
+
+```bash
+docker compose down -v
+```
+
+重新构建镜像：
+
+```bash
+docker compose build --no-cache
+docker compose up
+```
+
+配置方式：
+
+- 可通过 shell 环境变量或本地 `.env` 文件覆盖 `MYSQL_DATABASE`、`MYSQL_USER`、`MYSQL_PASSWORD`、`MYSQL_ROOT_PASSWORD`。
+- 默认值仅用于本地开发，不是生产凭据。
+- 不要提交真实 API Key、Token、数据库密码或其他生产凭据。
+
+数据目录：
+
+- MySQL 数据保存在 Docker named volume `mysql-data`。
+- 上传文件保存在 Docker named volume `upload-data`，挂载到后端容器 `/app/uploads`。
+
+已知限制：
+
+- 首次 `docker compose up --build` 会下载 Maven、Node、MySQL、Nginx 和 JRE 基础镜像，耗时取决于网络。
+- 当前 Compose 配置面向本地开发分发，不包含 HTTPS、生产域名、生产 Secret 管理或线上备份策略。
+- 如端口 `5173` 或 `8080` 被占用，需要先停止占用进程，或在本地 `docker-compose.override.yml` 中调整端口映射。
 
 后端测试命令：
 
@@ -190,9 +244,7 @@ T11 前端基线采用面向衣橱管理工具的 Open Design 方向：第一屏
 
 ## 分发与部署
 
-当前尚未产生分发产物，也没有线上部署 URL。
-
-SPEC 中暂定分发方式为 Docker Compose，最终部署平台将在部署阶段确认。
+当前已提供 Docker Compose 本地分发方式，可启动前端、后端和 MySQL。线上部署 URL 尚未提供，最终部署平台将在部署阶段确认。
 
 ## 安全边界
 
@@ -212,7 +264,6 @@ T3A 认证会话实现使用后端设置的 `MMF_SESSION` Cookie。Cookie 本地
 
 ## 已知限制
 
-- 当前已完成后端注册、登录、退出、个人资料和修改密码 API，以及前端应用壳、placeholder route、API client、认证页面和个人资料页面；尚未实现衣物管理、搭配编辑器或搭配方案功能。
-- 已创建数据库迁移、JPA Entity、Repository 和认证 REST API；Docker 和 CI 文件尚未创建。
-- Docker、CI、部署和线上 URL 尚未完成。
+- 当前 Compose 配置使用本地开发默认密码；生产环境必须改用部署平台 Secret 或受控环境变量。
+- CI、部署和线上 URL 尚未完成。
 - 当前开发机 shell 中 `mvn` 和 `make` 不在 PATH；需要配置本地工具链后才能直接运行 `cd backend && mvn test`、`make test` 和 `make test-e2e`。当前可用替代命令是 `mingw32-make test-e2e`。
