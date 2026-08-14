@@ -91,6 +91,9 @@ SPEC 阶段确定的 MVP 功能包括：
 ├── AGENT_LOG.md
 ├── REFLECTION.md
 ├── Makefile
+├── e2e/
+│   ├── README.md
+│   └── run-backend-e2e.ps1
 ├── backend/
 │   ├── pom.xml
 │   └── src/
@@ -130,7 +133,7 @@ SPEC 阶段确定的 MVP 功能包括：
 └── src/
 ```
 
-后续实现阶段仍计划创建 `e2e/`、`docker-compose.yml` 和 `.gitlab-ci.yml` 等文件。
+后续实现阶段仍计划创建 `docker-compose.yml` 和 `.gitlab-ci.yml` 等文件。
 
 ## 安装与运行
 
@@ -154,7 +157,19 @@ cd frontend && npm ci && npm run build && npm test -- --run
 make test
 ```
 
-本地环境需要自行安装 Java 17+、Maven、Node.js、npm 和 make。后端 schema 测试使用 Testcontainers MySQL，因此运行完整后端测试时还需要 Docker daemon 可用。当前开发机的 Maven 和 make 未加入 PATH，因此验证时使用 JetBrains 自带 Maven 可执行文件完成后端测试。
+核心 E2E 测试入口：
+
+```bash
+make test-e2e
+```
+
+Windows 环境如果没有 GNU Make，但安装了 MinGW Make，可运行：
+
+```bash
+mingw32-make test-e2e
+```
+
+本地环境需要自行安装 Java 17+、Maven、Node.js、npm 和 make。后端 schema 测试和 E2E 测试使用 Testcontainers MySQL，因此运行完整后端测试或 E2E 时还需要 Docker daemon 可用。当前开发机 shell 中 `mvn` 和 `make` 不在 PATH；E2E 验证使用 `mingw32-make test-e2e`，并由 `e2e/run-backend-e2e.ps1` 自动查找本机 Maven 或 Maven wrapper 缓存。
 
 ## 测试
 
@@ -165,12 +180,13 @@ make test
 - 后端 Repository：JPA Entity 与 Spring Data Repository 可在 Testcontainers MySQL 上保存和读取核心对象，并验证 draft 衣物、标签唯一约束和 `outfit_items` 外键约束。
 - 后端认证：`POST /api/auth/register`、`POST /api/auth/login`、`POST /api/auth/logout`，覆盖 BCrypt 密码哈希、重复用户名、统一登录失败信息、`MMF_SESSION` HttpOnly Cookie、7 天过期、`SameSite=Lax` 和登出清理。
 - 前端：Vue 应用壳渲染 `MixMyFit`，`/app` 渲染已登录应用壳占位 route，API client 默认使用 Cookie credentials；认证 UI 覆盖登录、注册、退出本地状态清理；个人资料 UI 覆盖 username/nickname 渲染、昵称修改成功/错误状态、密码修改必填校验和密码值不写入日志。
+- E2E：`CoreFlowE2eTest` 覆盖注册、登录、上传两张衣物图片、批量补全品类/颜色/季节/标签、创建搭配、保存搭配、按标签筛选，以及用户 A 不能直接访问用户 B 的衣物或搭配方案。
 
 ## 前端 Open Design 方向
 
 T11 前端基线采用面向衣橱管理工具的 Open Design 方向：第一屏直接进入应用壳，不做营销式 landing page；整体以安静、实用、可扫描的工作台体验为目标。后续 UI 应延续克制的中性色底、清晰层级、稳定尺寸控件和受控图片容器，并通过 `object-fit`、固定展示区域和懒加载约束衣物图片展示。当前仅记录设计方向和基础结构，不表示最终业务 UI 已完成。
 
-后续任务会逐步加入衣物、搭配、E2E 和 CI 测试。
+后续任务会逐步加入 CI 测试。
 
 ## 分发与部署
 
@@ -199,4 +215,4 @@ T3A 认证会话实现使用后端设置的 `MMF_SESSION` Cookie。Cookie 本地
 - 当前已完成后端注册、登录、退出、个人资料和修改密码 API，以及前端应用壳、placeholder route、API client、认证页面和个人资料页面；尚未实现衣物管理、搭配编辑器或搭配方案功能。
 - 已创建数据库迁移、JPA Entity、Repository 和认证 REST API；Docker 和 CI 文件尚未创建。
 - Docker、CI、部署和线上 URL 尚未完成。
-- 当前开发机 shell 中 `mvn` 和 `make` 不在 PATH；需要配置本地工具链后才能直接运行 `cd backend && mvn test` 和 `make test`。
+- 当前开发机 shell 中 `mvn` 和 `make` 不在 PATH；需要配置本地工具链后才能直接运行 `cd backend && mvn test`、`make test` 和 `make test-e2e`。当前可用替代命令是 `mingw32-make test-e2e`。

@@ -1246,6 +1246,16 @@
 
 ### T17：端到端核心工作流测试
 
+**状态：** 已完成。
+
+**完成记录：**
+- 分支 / worktree：`task/17-e2e-core-flow`；`D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-17-e2e-core-flow`。
+- 测试结果：`mingw32-make test-e2e` 通过，`CoreFlowE2eTest` 2 tests, 0 failures / errors / skipped；完整后端 Maven 测试通过，74 tests, 0 failures / errors / skipped。
+- SPEC 合规检查：通过。
+- 代码质量检查：通过。
+- 完成分支决定：开 PR。
+- Commit hash：9fb316ce5de972e806d36d8e6941554d10ec0e0c。
+
 **目标：** 通过 E2E 测试验证完整 MVP 闭环和跨用户隔离。
 
 **依赖关系：** T13B、T16。
