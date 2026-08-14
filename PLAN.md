@@ -6,7 +6,7 @@
 
 **架构：** Vue 负责 WebUI，并通过 REST API 与 Spring Boot 后端通信。Spring Boot 负责认证、授权、业务规则、文件上传安全和 MySQL 持久化。上传图片存储在服务端本地文件系统中，并通过 Docker volume 持久化。
 
-**技术栈：** Spring Boot REST API、Java 17、Maven、Vue 前端、MySQL、Flyway、Testcontainers MySQL、本地文件系统上传存储、Docker Compose、GitLab CI。
+**技术栈：** Spring Boot REST API、Java 17、Maven、Vue 前端、MySQL、Flyway、Testcontainers MySQL、本地文件系统上传存储、Docker Compose、GitHub Actions CI。
 
 ## 全局约束
 
@@ -30,7 +30,7 @@
 - 自定义品类默认作为配饰，不得自动变成固定主槽位。
 - 前端 / UI 开发必须使用 `Open Design` 进行，所有前端 task 必须沿用 T11 确认的设计系统与交互规则。
 - 每个实现 task 必须使用 TDD：先写失败测试，确认红灯，再写最小实现，确认绿灯，再重构。
-- `.gitlab-ci.yml` 必须包含名为 `unit-test` 的 job。
+- `.github/workflows/ci.yml` 必须包含名为 `unit-test` 的 job。
 - `REFLECTION.md` 由学生本人撰写，不由 AI 编写。
 
 ## 依赖关系图
@@ -70,7 +70,7 @@
 - `frontend/src/stores/`：认证状态与应用状态。
 - `e2e/`：端到端工作流测试。
 - `docker-compose.yml`：本地分发运行环境。
-- `.gitlab-ci.yml`：包含 `unit-test` 的 CI pipeline。
+- `.github/workflows/ci.yml`：包含 `unit-test` 的 CI pipeline。
 - `README.md`：面向用户的安装、运行、安全、分发和部署说明。
 - `AGENT_LOG.md`：AI 工作流时间线记录。
 - `SPEC_PROCESS.md`：计划阶段与冷启动验证记录。
@@ -1336,19 +1336,33 @@
 
 **建议分支 / worktree：** `task/18-docker-compose`
 
-### T19：GitLab CI 与一键测试入口
+### T19：GitHub Actions CI 与一键测试入口
+
+**状态：** 已完成
+
+**分支 / worktree：** `task/19-github-ci`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-19-github-ci`; linked worktree。
+
+**测试结果：** `mingw32-make test` 通过，后端 80 tests / 0 failures，前端 9 files / 32 tests passed；`mvn test -Dtest=CiWiringTest` 通过，2 tests / 0 failures；`make test` 在当前 PowerShell 中因 `make` 不在 PATH 无法直接执行，已用 MinGW Make 验证同一 Makefile 入口。
+
+**SPEC 合规检查：** 通过。
+
+**代码质量检查：** 通过。
+
+**完成分支决定：** 开 PR。
+
+**Commit hash：** 28187c6adba7172d1aeae8752d2f7b5bab161f31。
 
 **目标：** 在核心 E2E 已存在后，添加运行完整项目测试入口的 CI。
 
 **依赖关系：** T17。
 
 **涉及文件：**
-- 创建：`.gitlab-ci.yml`
+- 创建：`.github/workflows/ci.yml`
 - 修改：`Makefile`
 - 修改：`README.md`
 
 **预期实现要点：**
-- `.gitlab-ci.yml` 包含名为 `unit-test` 的 job。
+- `.github/workflows/ci.yml` 包含名为 `unit-test` 的 job。
 - `unit-test` 至少运行后端核心测试。
 - CI 同时校验前端构建/测试。
 - 如果实际可行，在 T18 合并后 CI 也校验 Docker build。
@@ -1361,17 +1375,17 @@
 - 运行本地等价命令。
 
 **需要先写的失败测试：**
-- 仓库检查断言 `.gitlab-ci.yml` 包含 `unit-test`。
+- 仓库检查断言 `.github/workflows/ci.yml` 包含 `unit-test`。
 - CI wiring 前，本地 `make test` 应因命令或配置缺失而失败。
 
 **完成标准：**
 - 本地 `make test` 通过。
-- `.gitlab-ci.yml` 包含 `unit-test`。
+- `.github/workflows/ci.yml` 包含 `unit-test`。
 - README 记录 CI 预期。
 
 **是否可并行：** 是。T17 后可与 T18 并行。
 
-**建议分支 / worktree：** `task/19-gitlab-ci`
+**建议分支 / worktree：** `task/19-github-ci`
 
 ### T20：部署准备与线上 WebUI 记录
 
@@ -1457,6 +1471,6 @@
 - [ ] 前端测试/构建通过。
 - [ ] E2E 核心工作流通过。
 - [ ] `docker compose up` 能启动完整本地系统。
-- [ ] `.gitlab-ci.yml` 包含 `unit-test`。
+- [x] `.github/workflows/ci.yml` 包含 `unit-test`。
 - [ ] README 记录安装、运行、测试、分发、部署、目录结构、安全边界和限制。
-- [ ] AGENT_LOG 已更新。
+- [x] AGENT_LOG 已更新。
