@@ -332,6 +332,19 @@
 - finishing-a-development-branch 判断：开 PR；Task 相关测试和完整本地等价测试入口均通过；Commit hash：28187c6adba7172d1aeae8752d2f7b5bab161f31。
 - 人工干预和教训：用户明确当前仓库是 GitHub，要求把 Task 19 的 GitLab 口径替换成 GitHub，其余不动；用户还要求快速收尾评审后再做文档收尾。教训是评审 diff 时必须同时查看 staged 和 unstaged 变更，新文件可能已 staged；本地一键入口不能只看 Makefile 目标存在，还要在当前工具链条件下实际跑通。
 
+## 2026-08-14 18:03 +08:00
+
+- Task 编号和标题：T20 部署准备与线上 WebUI 记录。
+- 分支 / worktree：`task/20-deployment`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-20-deployment`; linked worktree。
+- 使用的 subagent：Codex。
+- TDD / smoke 红灯摘要：用户确认 Railway 后，新增 `RailwayDeploymentTest`；首次红灯为 4 tests / 2 failures / 2 errors，原因是缺少 `backend/railway.json`、`frontend/railway.json`、`e2e/railway-smoke.ps1`，且前端 nginx 仍硬编码 `http://backend:8080/api/`。
+- 绿灯摘要：新增 Railway backend/frontend Docker service 配置；后端支持 Railway `PORT` 注入并保留本地 `8080` 默认值；前端 nginx 改为运行时 `PORT` / `BACKEND_ORIGIN` 模板；新增 Railway smoke 脚本验证 health、WebUI 和 `MMF_SESSION` Cookie flags。
+- 部署平台和配置：平台确认为 Railway；目标拓扑为 Railway MySQL + backend Docker service + frontend Docker/nginx service + backend upload volume。未写入真实 API Key、Token、数据库密码或其他凭据。
+- 测试命令和结果：RED：`mvn test -Dtest=RailwayDeploymentTest` 失败，确认配置缺失；GREEN：`mvn test -Dtest=RailwayDeploymentTest` 通过，5 tests / 0 failures；`mvn test -Dtest=RailwayDeploymentTest,DockerDistributionTest,CiWiringTest` 通过，11 tests / 0 failures；`npm run build` 首次因 `node_modules` 缺失失败，`npm ci` 后通过；`mingw32-make test` 通过，后端 85 tests / 0 failures，前端 9 files / 32 tests passed。
+- README / 线上 URL：README 已记录 Railway 架构、配置变量、Cookie 行为、smoke check 命令、本地 Compose 与线上差异和已知限制；公网 WebUI URL 仍待 Railway 实际部署完成后填写。
+- 阻塞问题：当前环境未安装 Railway CLI，也没有 Railway 项目访问凭据或公网域名，无法完成真实线上部署和 URL 记录。
+- 人工干预和教训：用户先要求推荐平台，随后确认 Railway。教训是 Task 20 的自动化验证应区分“部署准备配置可测”和“真实公网部署需平台访问”两部分；Cookie flags 要通过线上 smoke 脚本验证，不能只靠本地单元测试推断。
+
 ## 2026-XX-XX HH:mm
 
 - Task 编号：
