@@ -5,6 +5,7 @@
       <RegisterView v-else-if="route.path === '/register'" />
       <ProfileView v-else-if="route.path === '/profile'" />
       <ClothingListView v-else-if="route.path === '/clothes'" />
+      <OutfitEditorView v-else-if="route.path === '/outfit-editor'" />
       <h1 v-else>{{ route.title }}</h1>
     </section>
   </main>
@@ -16,6 +17,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { resolveRoute } from './router/routes'
 import LoginView from './views/auth/LoginView.vue'
 import ClothingListView from './views/clothing/ClothingListView.vue'
+import OutfitEditorView from './views/outfit-editor/OutfitEditorView.vue'
 import RegisterView from './views/auth/RegisterView.vue'
 import ProfileView from './views/profile/ProfileView.vue'
 

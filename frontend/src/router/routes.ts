@@ -21,6 +21,10 @@ const routes: AppRoute[] = [
     title: '衣物库'
   },
   {
+    path: '/outfit-editor',
+    title: '搭配编辑器'
+  },
+  {
     path: '/login',
     title: 'Log in'
   },
