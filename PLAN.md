@@ -1136,6 +1136,20 @@
 
 ### T15：前端配饰层
 
+**状态：** 已完成
+
+**分支 / worktree：** `task/15-frontend-accessories`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-15-frontend-accessories`
+
+**测试结果：** TDD 红灯：新增配饰候选、payload、尺寸、移除和拖动测试后，`npm test -- --run src/views/outfit-editor/__tests__/OutfitEditorView.test.ts` 失败，先因缺少 `配饰候选/配饰层` UI 失败，后因缺少移除按钮和拖动 position 更新失败；绿灯：同命令通过，Test Files: 1 passed, Tests: 9 passed；`npm test -- --run` 通过，Test Files: 8 passed, Tests: 27 passed；`npm run build` 通过；`git diff --check` 退出码 0，仅 CRLF/LF warning。
+
+**SPEC 合规检查：** 通过
+
+**代码质量检查：** 通过
+
+**完成分支决定：** 开 PR
+
+**Commit：** 待填写
+
 **目标：** 实现自定义品类配饰层交互。
 
 **依赖关系：** T14。

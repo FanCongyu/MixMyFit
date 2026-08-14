@@ -261,6 +261,20 @@
 - finishing-a-development-branch 判断：开 PR；Task 相关测试、前端全量测试和构建均通过，当前分支适合提交后创建 PR；Commit hash：3bb216d7f733604c16750c65b0af8867c4c4b0b4。
 - 人工干预和教训：用户要求先做快速收尾评审，再仅修改 `AGENT_LOG.md`、`PLAN.md` 和必要时的 README；README 经评估无需更新。教训是前端异步加载测试要等待真实内容就绪，而不是只等待容器出现；多选 select 测试需要显式设置 option selected 后触发 change。
 
+## 2026-08-14 11:46 +08:00
+
+- Task 编号和标题：T15 前端配饰层。
+- 分支 / worktree：`task/15-frontend-accessories`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-15-frontend-accessories`; linked worktree。
+- 使用的 subagent：Codex。
+- TDD 红灯摘要：新增配饰候选、添加后 payload、尺寸档位测试后，`npm test -- --run src/views/outfit-editor/__tests__/OutfitEditorView.test.ts` 失败，3 个新增测试因缺少 `配饰候选/配饰层` UI 失败；补充移除和拖动测试后，再次红灯为 9 tests / 2 failed，原因是缺少移除按钮和拖动 position 更新。
+- TDD 绿灯摘要：在 `OutfitEditorView` 中加载自定义品类 ready 衣物作为配饰候选，实现添加、移除、按钮微调位置、HTML drag/drop 更新位置、上移 z-index、small/medium/large 尺寸和 T16 可复用的配饰 payload 状态。
+- 重构摘要：复用现有 outfit/candidates 样式规则补充配饰层样式；将 payload output 视觉隐藏，避免页面直接显示 JSON；未修改业务范围外代码。
+- 测试命令和结果：`npm test -- --run src/views/outfit-editor/__tests__/OutfitEditorView.test.ts` 最终通过，Test Files: 1 passed, Tests: 9 passed；`npm test -- --run` 通过，Test Files: 8 passed, Tests: 27 passed；`npm run build` 通过；`git diff --check` 退出码 0，仅 CRLF/LF warning。
+- SPEC / PLAN 合规检查结论：通过；只完成 T15，满足自定义品类配饰候选、添加、移除、拖动、z-index、small/medium/large 和 payload 状态要求；未实现 T16 保存 API、搭配元数据或其他 task；未写入真实凭据。
+- 代码质量检查结论：通过；Critical issues 无。Non-critical：拖动位置当前使用 viewport 坐标，后续可改为相对配饰层坐标；z-index 后续可补“下移一层”；T16 保存实现时可抽取 payload builder。
+- finishing-a-development-branch 判断：开 PR；Task 相关测试、前端全量测试和构建均通过，当前分支适合提交后创建 PR；Commit：待填写。
+- 人工干预和教训：用户要求先执行 Task 15、随后做快速收尾评审并确认 README 仅必要时更新；README 经评估无需更新。教训是计划中的失败测试清单是下限，评审时要补齐完整交互要求；jsdom drag/drop 坐标需要显式构造事件属性，不能假设 `fireEvent.drop` 会传入 `clientX/clientY`。
+
 ## 2026-XX-XX HH:mm
 
 - Task 编号：
