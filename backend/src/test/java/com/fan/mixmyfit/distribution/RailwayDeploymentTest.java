@@ -70,6 +70,15 @@ class RailwayDeploymentTest {
     }
 
     @Test
+    void readmeUsesExplicitBackendPortForRailwayPrivateNetworking() throws IOException {
+        String readme = Files.readString(projectRoot.resolve("README.md"));
+
+        assertThat(readme)
+                .contains("BACKEND_ORIGIN=http://${{backend.RAILWAY_PRIVATE_DOMAIN}}:8080")
+                .doesNotContain("BACKEND_ORIGIN=http://${{backend.RAILWAY_PRIVATE_DOMAIN}}:${{backend.PORT}}");
+    }
+
+    @Test
     void deploymentFilesDoNotCommitProductionSecrets() throws IOException {
         String deploymentText = Files.readString(projectRoot.resolve("backend").resolve("railway.json"))
                 + Files.readString(projectRoot.resolve("frontend").resolve("railway.json"));
