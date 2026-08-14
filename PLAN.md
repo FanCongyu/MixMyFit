@@ -1389,7 +1389,7 @@
 
 ### T20：部署准备与线上 WebUI 记录
 
-**目标：** 准备部署配置，并记录最终线上 WebUI URL。
+**目标：** 准备 Vercel + Railway 部署配置，并记录最终线上 WebUI URL。
 
 **依赖关系：** T18、T19，以及用户确认部署平台。
 
@@ -1399,8 +1399,9 @@
 - 修改：`AGENT_LOG.md`
 
 **预期实现要点：**
-- 在编写平台特定配置前，先询问并确认 Render、Railway、Fly.io 或其他平台。
-- 记录所选部署拓扑下 HTTPS/Cookie `Secure` 和 `SameSite` 行为。
+- 部署拓扑确认为 Vercel + Railway：前端部署到 Vercel，后端和 MySQL 部署到 Railway。
+- 前端通过 `VITE_API_BASE_URL` 访问 Railway 后端 Public Domain，不使用 Railway private domain。
+- 记录所选部署拓扑下 HTTPS/Cookie `Secure`、`SameSite=None` 和 CORS credentials 行为。
 - 记录线上部署与本地 Docker Compose 的差异。
 - 部署成功后，在 README 记录公网 WebUI URL。
 

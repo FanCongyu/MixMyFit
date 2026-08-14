@@ -11,36 +11,29 @@ class RailwayDeploymentTest {
     private final Path projectRoot = Path.of("").toAbsolutePath().normalize().getParent();
 
     @Test
-    void railwayServiceConfigsUseDockerfilesAndHealthChecks() throws IOException {
+    void railwayBackendServiceConfigUsesDockerfileAndHealthCheck() throws IOException {
         String backendConfig = Files.readString(projectRoot.resolve("backend").resolve("railway.json"));
-        String frontendConfig = Files.readString(projectRoot.resolve("frontend").resolve("railway.json"));
 
         assertThat(backendConfig)
                 .contains("\"builder\": \"DOCKERFILE\"")
                 .contains("\"healthcheckPath\": \"/actuator/health\"")
                 .contains("\"restartPolicyType\": \"ON_FAILURE\"");
-        assertThat(frontendConfig)
-                .contains("\"builder\": \"DOCKERFILE\"")
-                .contains("\"healthcheckPath\": \"/\"")
-                .contains("\"restartPolicyType\": \"ON_FAILURE\"");
     }
 
     @Test
-    void frontendRuntimeProxyCanTargetRailwayBackendService() throws IOException {
+    void frontendDeploymentUsesVercelApiBaseUrlInsteadOfRailwayPrivateNetworking() throws IOException {
         String frontendDockerfile = Files.readString(projectRoot.resolve("frontend").resolve("Dockerfile"));
+        Path frontendRailwayConfig = projectRoot.resolve("frontend").resolve("railway.json");
+        Path frontendEnvExample = projectRoot.resolve("frontend").resolve(".env.example");
 
         assertThat(frontendDockerfile)
-                .contains("PORT=80")
-                .contains("BACKEND_ORIGIN")
-                .contains("NGINX_ENVSUBST_FILTER")
-                .contains("PORT|BACKEND_ORIGIN")
-                .contains("normalize-backend-origin.envsh")
-                .contains("printf '%s\\n'")
-                .contains("${BACKEND_ORIGIN%:}8080")
-                .contains("mkdir -p /etc/nginx/templates")
-                .contains("/etc/nginx/templates/default.conf.template")
-                .contains("listen ${PORT};")
-                .doesNotContain("proxy_pass http://backend:8080/api/");
+                .doesNotContain("backend.railway.internal")
+                .doesNotContain("RAILWAY_PRIVATE_DOMAIN")
+                .doesNotContain("BACKEND_ORIGIN");
+        assertThat(frontendRailwayConfig).doesNotExist();
+        assertThat(frontendEnvExample).exists();
+        assertThat(Files.readString(frontendEnvExample))
+                .contains("VITE_API_BASE_URL=your_backend_public_url_here");
     }
 
     @Test
@@ -57,7 +50,7 @@ class RailwayDeploymentTest {
     }
 
     @Test
-    void deploymentSmokeScriptChecksHealthWebUiAndCookieFlags() throws IOException {
+    void deploymentSmokeScriptChecksRailwayBackendAndVercelWebUi() throws IOException {
         Path smokeScript = projectRoot.resolve("e2e").resolve("railway-smoke.ps1");
 
         assertThat(smokeScript).exists();
@@ -65,26 +58,37 @@ class RailwayDeploymentTest {
 
         assertThat(smoke)
                 .contains("MIXMYFIT_WEBUI_URL")
+                .contains("MIXMYFIT_API_BASE_URL")
                 .contains("MIXMYFIT_HEALTH_URL")
                 .contains("MMF_SESSION")
                 .contains("HttpOnly")
                 .contains("Secure")
-                .contains("SameSite=Lax");
+                .contains("SameSite=None");
     }
 
     @Test
-    void readmeUsesExplicitBackendPortForRailwayPrivateNetworking() throws IOException {
+    void docsDescribeVercelFrontendAndRailwayBackendDeployment() throws IOException {
         String readme = Files.readString(projectRoot.resolve("README.md"));
+        String plan = Files.readString(projectRoot.resolve("PLAN.md"));
 
         assertThat(readme)
-                .contains("BACKEND_ORIGIN=http://${{backend.RAILWAY_PRIVATE_DOMAIN}}:8080")
-                .doesNotContain("BACKEND_ORIGIN=http://${{backend.RAILWAY_PRIVATE_DOMAIN}}:${{backend.PORT}}");
+                .contains("前端部署到 Vercel")
+                .contains("后端部署到 Railway")
+                .contains("VITE_API_BASE_URL")
+                .contains("Railway Public Domain")
+                .doesNotContain("backend.railway.internal")
+                .doesNotContain("RAILWAY_PRIVATE_DOMAIN");
+        assertThat(plan)
+                .contains("Vercel + Railway")
+                .contains("VITE_API_BASE_URL")
+                .doesNotContain("前端部署 Railway");
     }
 
     @Test
     void deploymentFilesDoNotCommitProductionSecrets() throws IOException {
         String deploymentText = Files.readString(projectRoot.resolve("backend").resolve("railway.json"))
-                + Files.readString(projectRoot.resolve("frontend").resolve("railway.json"));
+                + Files.readString(projectRoot.resolve("frontend").resolve("vercel.json"))
+                + Files.readString(projectRoot.resolve("frontend").resolve(".env.example"));
 
         assertThat(deploymentText)
                 .doesNotContain("MYSQL_PASSWORD")

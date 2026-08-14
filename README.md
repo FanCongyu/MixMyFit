@@ -6,7 +6,7 @@ MixMyFit 是一个个人衣橱搭配管理 Web 应用，面向希望数字化管
 
 用户可以上传自己的衣物图片，按品类、颜色、季节和标签管理衣物，并在搭配编辑器中组合、预览、保存和复用穿搭方案。项目目标是减少用户反复试穿或手工拼图的成本，让用户能基于自己的真实衣物图片完成搭配规划。
 
-本项目是 AI4SE 期末项目 B（非 harness 应用类项目）。当前已完成 SPEC、PLAN、冷启动验证、后端认证与个人资料 API、衣物与搭配核心 API、前端核心页面、核心 E2E、Docker Compose 本地分发、GitHub Actions CI，以及 Railway 部署准备；公网 WebUI URL 尚需实际部署后补入。
+本项目是 AI4SE 期末项目 B（非 harness 应用类项目）。当前已完成 SPEC、PLAN、冷启动验证、后端认证与个人资料 API、衣物与搭配核心 API、前端核心页面、核心 E2E、Docker Compose 本地分发、GitHub Actions CI，以及 Vercel + Railway 部署准备；公网 WebUI URL 尚需实际部署后补入。
 
 ## 目标用户
 
@@ -66,7 +66,7 @@ SPEC 阶段确定的 MVP 功能包括：
 - [x] 实现核心功能
 - [x] 提供 Docker Compose 本地分发
 - [x] 配置测试与 CI
-- [x] 准备 Railway 部署配置和 smoke checklist
+- [x] 准备 Vercel + Railway 部署配置和 smoke checklist
 - [ ] 完成线上部署并记录公网 WebUI URL
 
 ## 项目文档
@@ -146,7 +146,7 @@ CI 使用 GitHub Actions workflow `.github/workflows/ci.yml`。
 
 ## 安装与运行
 
-当前已有后端 API、前端页面、核心 E2E、Docker Compose 本地分发、GitHub Actions CI 和 Railway 部署准备。线上公网 WebUI URL 仍需在 Railway 实际部署成功后填写。
+当前已有后端 API、前端页面、核心 E2E、Docker Compose 本地分发、GitHub Actions CI 和 Vercel + Railway 部署准备。线上公网 WebUI URL 仍需在实际部署成功后填写。
 
 ### Docker Compose 本地启动
 
@@ -256,32 +256,43 @@ CI wiring 由后端仓库检查测试覆盖。
 
 ## 分发与部署
 
-当前已提供 Docker Compose 本地分发方式，可启动前端、后端和 MySQL。线上部署平台已确认为 Railway。
+当前已提供 Docker Compose 本地分发方式，可启动前端、后端和 MySQL。线上部署方案已确认为 Vercel + Railway。
 
-### Railway 部署准备
+### Vercel + Railway 部署准备
 
 目标部署拓扑：
 
-- Railway MySQL 服务负责生产数据库。
-- Backend 服务使用 `backend/Dockerfile` 和 `backend/railway.json`，连接 Railway MySQL，并将上传目录挂载到 `/app/uploads` volume。
-- Frontend 服务使用 `frontend/Dockerfile` 和 `frontend/railway.json`，通过 Railway HTTPS public domain 暴露 WebUI，并通过 nginx `/api/` 反代到后端服务。
-- 线上登录请求经 Frontend 同域 `/api/auth/login` 进入后端，因此 Cookie 保持 `SameSite=Lax`；生产 HTTPS 下后端必须设置 `MIXMYFIT_AUTH_COOKIE_SECURE=true`，使 `MMF_SESSION` 带 `Secure`、`HttpOnly`。
+- 前端部署到 Vercel，使用 `frontend` 作为项目根目录，构建命令为 `npm run build`，输出目录为 `dist`。
+- 后端部署到 Railway，使用 `backend/Dockerfile` 和 `backend/railway.json`，连接 Railway MySQL，并将上传目录挂载到 `/app/uploads` volume。
+- MySQL 使用 Railway MySQL 服务。
+- 后端需要生成 Railway Public Domain，供浏览器端 Vercel 前端访问 API。
+- Vercel 前端通过 `VITE_API_BASE_URL` 指向 Railway 后端 Public Domain，不使用 Railway private domain。
+- 线上前后端跨站部署，后端 Cookie 应设置 `Secure`、`HttpOnly`、`SameSite=None`，并通过 CORS 允许 Vercel 前端 origin 携带 credentials。
 
-Railway 服务配置要点：
+Railway 后端服务配置要点：
 
 - Backend root directory：`backend`
-- Frontend root directory：`frontend`
 - Backend volume mount：`/app/uploads`
-- Backend 变量：`SPRING_DATASOURCE_URL`、`SPRING_DATASOURCE_USERNAME`、`SPRING_DATASOURCE_PASSWORD`、`UPLOAD_DIR=/app/uploads`、`MIXMYFIT_AUTH_COOKIE_SECURE=true`
-- Frontend 变量：`BACKEND_ORIGIN=http://${{backend.RAILWAY_PRIVATE_DOMAIN}}:8080`、`PORT=80`
+- Backend 变量：`SPRING_DATASOURCE_URL`、`SPRING_DATASOURCE_USERNAME`、`SPRING_DATASOURCE_PASSWORD`、`UPLOAD_DIR=/app/uploads`、`MIXMYFIT_AUTH_COOKIE_SECURE=true`、`MIXMYFIT_AUTH_COOKIE_SAME_SITE=None`、`MIXMYFIT_CORS_ALLOWED_ORIGINS=<vercel-public-origin>`
 
 不要把 Railway Token、MySQL 密码或任何真实生产凭据写入仓库。数据库连接值应在 Railway Variables 中引用 Railway MySQL 提供的变量。
+
+Vercel 前端服务配置要点：
+
+- Project root directory：`frontend`
+- Build command：`npm run build`
+- Output directory：`dist`
+- Environment Variables：`VITE_API_BASE_URL=<railway-backend-public-domain>`
+- 示例文件：`frontend/.env.example`
+
+不要把真实后端域名写进前端源码、Dockerfile 或配置文件；在 Vercel 环境变量中配置即可。
 
 线上 smoke check：
 
 ```powershell
-$env:MIXMYFIT_WEBUI_URL="https://<frontend-public-domain>"
-$env:MIXMYFIT_HEALTH_URL="https://<backend-public-domain>/actuator/health"
+$env:MIXMYFIT_WEBUI_URL="https://<vercel-frontend-public-domain>"
+$env:MIXMYFIT_API_BASE_URL="https://<railway-backend-public-domain>"
+$env:MIXMYFIT_HEALTH_URL="https://<railway-backend-public-domain>/actuator/health"
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File e2e/railway-smoke.ps1
 ```
 
@@ -289,16 +300,16 @@ Smoke checklist 覆盖：
 
 - 后端 `/actuator/health` 返回 `UP`。
 - 前端 WebUI 返回 Vue 入口页。
-- 注册临时 smoke 用户后登录，验证 `MMF_SESSION` Cookie 包含 `HttpOnly`、`Secure`、`SameSite=Lax`。
+- 通过 Railway 后端 Public Domain 注册临时 smoke 用户后登录，验证 `MMF_SESSION` Cookie 包含 `HttpOnly`、`Secure`、`SameSite=None`。
 
 线上 WebUI URL：待 Railway 部署成功后填写。
 
 线上部署与本地 Docker Compose 的差异：
 
-- 本地 Compose 使用仓库内 `docker-compose.yml` 和 Docker named volumes；Railway 使用拆分服务、Railway MySQL 和 Railway volume。
+- 本地 Compose 使用仓库内 `docker-compose.yml`、nginx 反代和 Docker named volumes；线上前端由 Vercel 托管静态资源，后端和 MySQL 由 Railway 托管。
 - 本地默认开发密码只用于本地；Railway 必须通过平台变量注入真实数据库连接信息。
-- 本地默认 HTTP 且 Cookie `Secure=false`；Railway 通过 HTTPS 访问，后端必须启用 `MIXMYFIT_AUTH_COOKIE_SECURE=true`。
-- 本地前端 nginx 默认反代 `http://backend:8080`；Railway 通过 `BACKEND_ORIGIN` 指向后端服务地址。
+- 本地默认同源 HTTP 且 Cookie `Secure=false`、`SameSite=Lax`；线上 Vercel + Railway 跨站 HTTPS 部署必须启用 `MIXMYFIT_AUTH_COOKIE_SECURE=true` 和 `MIXMYFIT_AUTH_COOKIE_SAME_SITE=None`。
+- 本地前端 nginx 默认反代 `http://backend:8080`；线上 Vercel 前端使用 `VITE_API_BASE_URL` 直接访问 Railway 后端 Public Domain。
 
 ## 安全边界
 
@@ -312,12 +323,12 @@ MixMyFit MVP 不调用 LLM、agent 或外部 AI API，因此不需要配置 LLM 
 - 生产环境配置。
 - 上传文件访问路径。
 
-真实数据库密码、Token 或其他生产凭据不得提交到 Git。Railway 部署时必须通过 Railway Variables 配置数据库连接和生产开关；仓库只提交平台配置和示例说明，不提交真实凭据。
+真实数据库密码、Token 或其他生产凭据不得提交到 Git。Railway 部署时必须通过 Railway Variables 配置数据库连接和生产开关；Vercel 部署时必须通过 Vercel Environment Variables 配置 `VITE_API_BASE_URL`；仓库只提交平台配置和示例说明，不提交真实凭据。
 
 T3A 认证会话实现使用后端设置的 `MMF_SESSION` Cookie。Cookie 本地默认 `HttpOnly`、`SameSite=Lax`、7 天过期；生产 HTTPS 部署时应通过配置启用 Secure Cookie。密码使用 BCrypt 哈希保存，不保存明文密码。
 
 ## 已知限制
 
 - 当前 Compose 配置使用本地开发默认密码；生产环境必须改用部署平台 Secret 或受控环境变量。
-- Railway 部署准备已完成，但公网 WebUI URL 尚未填写；需要实际创建 Railway 项目、服务、变量和域名后运行 smoke check。
+- Vercel + Railway 部署准备已完成，但公网 WebUI URL 尚未填写；需要实际创建 Vercel 前端项目、Railway 后端/MySQL 服务、变量和域名后运行 smoke check。
 - 当前开发机 shell 中 `make` 不在 PATH；需要配置 GNU Make 后才能直接运行 `make test` 和 `make test-e2e`。当前可用替代命令是 `mingw32-make test` 和 `mingw32-make test-e2e`。
