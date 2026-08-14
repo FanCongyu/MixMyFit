@@ -300,7 +300,7 @@
 - 测试命令和结果：`mingw32-make test-e2e` 通过，`CoreFlowE2eTest` 2 tests, Failures 0, Errors 0, Skipped 0；使用本机 `.m2\wrapper` 中 Maven 可执行文件运行完整后端 `mvn test` 通过，74 tests, Failures 0, Errors 0, Skipped 0；`git diff --check` 无空白错误，仅 CRLF/LF warning。
 - SPEC / PLAN 合规检查结论：通过；只完成 T17，覆盖注册登录、两张图片上传、批量补全品类/颜色/季节/标签、创建并保存搭配、按标签筛选，以及用户 A 不能直接访问用户 B 的衣物或搭配方案；未实现 T18/CI/Docker 分发；未写入真实凭据。
 - 代码质量检查结论：通过；Critical issues 无。Non-critical：E2E 测试的 Testcontainers/DataSource 配置后续可抽基类；`test-e2e` 当前偏 Windows/PowerShell，后续可补跨平台 shell 入口或项目 Maven wrapper。
-- finishing-a-development-branch 判断：开 PR；Task 相关 E2E 和完整后端测试均通过，当前分支适合提交后创建 PR。Commit hash：待填写。
+- finishing-a-development-branch 判断：开 PR；Task 相关 E2E 和完整后端测试均通过，当前分支适合提交后创建 PR。Commit hash：9fb316ce5de972e806d36d8e6941554d10ec0e0c。
 - 人工干预和教训：用户启动 Docker 后继续验证；用户要求快速收尾评审并明确 README 只有必要时更新。教训是红灯必须区分业务失败、环境失败和命令入口失败；E2E task 中“可运行的文档化命令”本身也需要纳入验证。
 
 ## 2026-XX-XX HH:mm
