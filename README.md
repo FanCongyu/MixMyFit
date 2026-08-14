@@ -6,7 +6,7 @@ MixMyFit 是一个个人衣橱搭配管理 Web 应用，面向希望数字化管
 
 用户可以上传自己的衣物图片，按品类、颜色、季节和标签管理衣物，并在搭配编辑器中组合、预览、保存和复用穿搭方案。项目目标是减少用户反复试穿或手工拼图的成本，让用户能基于自己的真实衣物图片完成搭配规划。
 
-本项目是 AI4SE 期末项目 B（非 harness 应用类项目）。当前已完成 SPEC、PLAN、冷启动验证、后端认证与个人资料 API、衣物与搭配核心 API、前端核心页面、核心 E2E、Docker Compose 本地分发、GitHub Actions CI，以及 Vercel + Railway 部署准备；公网 WebUI URL 尚需实际部署后补入。
+本项目是 AI4SE 期末项目 B（非 harness 应用类项目）。当前已完成 SPEC、PLAN、冷启动验证、后端认证与个人资料 API、衣物与搭配核心 API、前端核心页面、核心 E2E、Docker Compose 本地分发、GitHub Actions CI，以及 Vercel + Railway 部署准备；Vercel 前端公网 WebUI URL 已记录，Railway 后端部署仍需线上 smoke 验证。
 
 ## 目标用户
 
@@ -67,7 +67,8 @@ SPEC 阶段确定的 MVP 功能包括：
 - [x] 提供 Docker Compose 本地分发
 - [x] 配置测试与 CI
 - [x] 准备 Vercel + Railway 部署配置和 smoke checklist
-- [ ] 完成线上部署并记录公网 WebUI URL
+- [x] 记录 Vercel 前端公网 WebUI URL
+- [ ] 完成 Railway 后端部署并通过线上 smoke check
 
 ## 项目文档
 
@@ -118,7 +119,8 @@ SPEC 阶段确定的 MVP 功能包括：
 │               └── SchemaMigrationTest.java
 ├── frontend/
 │   ├── Dockerfile
-│   ├── railway.json
+│   ├── vercel.json
+│   ├── .env.example
 │   ├── package.json
 │   ├── package-lock.json
 │   ├── index.html
@@ -146,7 +148,7 @@ CI 使用 GitHub Actions workflow `.github/workflows/ci.yml`。
 
 ## 安装与运行
 
-当前已有后端 API、前端页面、核心 E2E、Docker Compose 本地分发、GitHub Actions CI 和 Vercel + Railway 部署准备。线上公网 WebUI URL 仍需在实际部署成功后填写。
+当前已有后端 API、前端页面、核心 E2E、Docker Compose 本地分发、GitHub Actions CI 和 Vercel + Railway 部署准备。Vercel 前端公网 WebUI URL 已记录，Railway 后端仍需按部署变量完成发布并运行线上 smoke check。
 
 ### Docker Compose 本地启动
 
@@ -274,7 +276,7 @@ Railway 后端服务配置要点：
 - Backend root directory：`backend`
 - Railway Healthcheck Path：`/api/health`
 - Backend volume mount：`/app/uploads`
-- Backend 变量：`SPRING_DATASOURCE_URL`、`SPRING_DATASOURCE_USERNAME`、`SPRING_DATASOURCE_PASSWORD`、`UPLOAD_DIR=/app/uploads`、`PORT=8080`、`MIXMYFIT_AUTH_COOKIE_SECURE=true`、`MIXMYFIT_AUTH_COOKIE_SAME_SITE=None`、`MIXMYFIT_CORS_ALLOWED_ORIGINS=<vercel-public-origin>`
+- Backend 变量：`SPRING_DATASOURCE_URL`、`SPRING_DATASOURCE_USERNAME`、`SPRING_DATASOURCE_PASSWORD`、`UPLOAD_DIR=/app/uploads`、`PORT=8080`、`MIXMYFIT_AUTH_COOKIE_SECURE=true`、`MIXMYFIT_AUTH_COOKIE_SAME_SITE=None`、`MIXMYFIT_CORS_ALLOWED_ORIGINS=https://mix-my-fit.vercel.app`
 - Railway 变量值不要带双引号。
 - 如 Railway 后端启动慢，可设置 `RAILWAY_HEALTHCHECK_TIMEOUT_SEC=300`。
 
@@ -293,7 +295,7 @@ Vercel 前端服务配置要点：
 线上 smoke check：
 
 ```powershell
-$env:MIXMYFIT_WEBUI_URL="https://<vercel-frontend-public-domain>"
+$env:MIXMYFIT_WEBUI_URL="https://mix-my-fit.vercel.app/"
 $env:MIXMYFIT_API_BASE_URL="https://<railway-backend-public-domain>"
 $env:MIXMYFIT_HEALTH_URL="https://<railway-backend-public-domain>/api/health"
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File e2e/railway-smoke.ps1
@@ -305,7 +307,7 @@ Smoke checklist 覆盖：
 - 前端 WebUI 返回 Vue 入口页。
 - 通过 Railway 后端 Public Domain 注册临时 smoke 用户后登录，验证 `MMF_SESSION` Cookie 包含 `HttpOnly`、`Secure`、`SameSite=None`。
 
-线上 WebUI URL：待 Railway 部署成功后填写。
+线上 WebUI URL：`https://mix-my-fit.vercel.app/`
 
 线上部署与本地 Docker Compose 的差异：
 
@@ -333,5 +335,5 @@ T3A 认证会话实现使用后端设置的 `MMF_SESSION` Cookie。Cookie 本地
 ## 已知限制
 
 - 当前 Compose 配置使用本地开发默认密码；生产环境必须改用部署平台 Secret 或受控环境变量。
-- Vercel + Railway 部署准备已完成，但公网 WebUI URL 尚未填写；需要实际创建 Vercel 前端项目、Railway 后端/MySQL 服务、变量和域名后运行 smoke check。
+- Vercel + Railway 部署准备已完成，Vercel 前端公网 WebUI URL 已记录；Railway 后端/MySQL 服务、变量和域名完成后仍需运行线上 smoke check。
 - 当前开发机 shell 中 `make` 不在 PATH；需要配置 GNU Make 后才能直接运行 `make test` 和 `make test-e2e`。当前可用替代命令是 `mingw32-make test` 和 `mingw32-make test-e2e`。
