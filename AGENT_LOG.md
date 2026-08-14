@@ -272,7 +272,7 @@
 - 测试命令和结果：`npm test -- --run src/views/outfit-editor/__tests__/OutfitEditorView.test.ts` 最终通过，Test Files: 1 passed, Tests: 9 passed；`npm test -- --run` 通过，Test Files: 8 passed, Tests: 27 passed；`npm run build` 通过；`git diff --check` 退出码 0，仅 CRLF/LF warning。
 - SPEC / PLAN 合规检查结论：通过；只完成 T15，满足自定义品类配饰候选、添加、移除、拖动、z-index、small/medium/large 和 payload 状态要求；未实现 T16 保存 API、搭配元数据或其他 task；未写入真实凭据。
 - 代码质量检查结论：通过；Critical issues 无。Non-critical：拖动位置当前使用 viewport 坐标，后续可改为相对配饰层坐标；z-index 后续可补“下移一层”；T16 保存实现时可抽取 payload builder。
-- finishing-a-development-branch 判断：开 PR；Task 相关测试、前端全量测试和构建均通过，当前分支适合提交后创建 PR；Commit：待填写。
+- finishing-a-development-branch 判断：开 PR；Task 相关测试、前端全量测试和构建均通过，当前分支适合提交后创建 PR；Commit hash：efd2fca0b552cc3e4461e69fc2a154da737db86a。
 - 人工干预和教训：用户要求先执行 Task 15、随后做快速收尾评审并确认 README 仅必要时更新；README 经评估无需更新。教训是计划中的失败测试清单是下限，评审时要补齐完整交互要求；jsdom drag/drop 坐标需要显式构造事件属性，不能假设 `fireEvent.drop` 会传入 `clientX/clientY`。
 
 ## 2026-XX-XX HH:mm
