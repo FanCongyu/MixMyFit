@@ -35,6 +35,7 @@ class RailwayDeploymentTest {
                 .contains("NGINX_ENVSUBST_FILTER")
                 .contains("PORT|BACKEND_ORIGIN")
                 .contains("normalize-backend-origin.envsh")
+                .contains("printf '%s\\n'")
                 .contains("${BACKEND_ORIGIN%:}8080")
                 .contains("mkdir -p /etc/nginx/templates")
                 .contains("/etc/nginx/templates/default.conf.template")
