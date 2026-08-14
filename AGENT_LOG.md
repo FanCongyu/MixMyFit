@@ -289,6 +289,20 @@
 - finishing-a-development-branch 判断：开 PR；Task 相关前端测试、全量前端测试和构建均通过，仓库级后端测试仅受本机 Docker/Testcontainers 环境阻塞；Commit hash：b94e3fbc42399593f48409c08311214ce34a0158。
 - 人工干预和教训：用户要求先做快速收尾评审，并根据评审补齐“编辑搭配内容/items”；README 经评估无需更新。教训是“编辑内容和元数据”不能只理解为 metadata PATCH，详情页必须提供影响 `items` 的 UI 操作；前端异步选项测试要等待 option 出现后再交互。
 
+## 2026-08-14 16:02 +08:00
+
+- Task 编号和标题：T17 端到端核心工作流测试。
+- 分支 / worktree：`task/17-e2e-core-flow`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-17-e2e-core-flow`; linked worktree。
+- 使用的 subagent：Codex。
+- TDD 红灯摘要：新增 `CoreFlowE2eTest` 后，第一次执行被 Docker daemon 未启动阻塞；Docker 启动后 E2E 业务测试直接通过，说明现有应用流程已满足闭环。随后以缺失命令入口作为红灯：`mingw32-make test-e2e` 失败，`No rule to make target 'test-e2e'`；初次补 Make 目标后又因 `mvn` 不在 PATH 失败。
+- TDD 绿灯摘要：新增 `Makefile` 的 `test-e2e` 目标、`e2e/run-backend-e2e.ps1` Maven 查找脚本和 `e2e/README.md`；`mingw32-make test-e2e` 最终通过。
+- 重构摘要：未修改业务代码；仅补充 E2E 测试、命令入口和 README 中必要的目录/测试说明。
+- 测试命令和结果：`mingw32-make test-e2e` 通过，`CoreFlowE2eTest` 2 tests, Failures 0, Errors 0, Skipped 0；使用本机 `.m2\wrapper` 中 Maven 可执行文件运行完整后端 `mvn test` 通过，74 tests, Failures 0, Errors 0, Skipped 0；`git diff --check` 无空白错误，仅 CRLF/LF warning。
+- SPEC / PLAN 合规检查结论：通过；只完成 T17，覆盖注册登录、两张图片上传、批量补全品类/颜色/季节/标签、创建并保存搭配、按标签筛选，以及用户 A 不能直接访问用户 B 的衣物或搭配方案；未实现 T18/CI/Docker 分发；未写入真实凭据。
+- 代码质量检查结论：通过；Critical issues 无。Non-critical：E2E 测试的 Testcontainers/DataSource 配置后续可抽基类；`test-e2e` 当前偏 Windows/PowerShell，后续可补跨平台 shell 入口或项目 Maven wrapper。
+- finishing-a-development-branch 判断：开 PR；Task 相关 E2E 和完整后端测试均通过，当前分支适合提交后创建 PR。Commit hash：待填写。
+- 人工干预和教训：用户启动 Docker 后继续验证；用户要求快速收尾评审并明确 README 只有必要时更新。教训是红灯必须区分业务失败、环境失败和命令入口失败；E2E task 中“可运行的文档化命令”本身也需要纳入验证。
+
 ## 2026-XX-XX HH:mm
 
 - Task 编号：
