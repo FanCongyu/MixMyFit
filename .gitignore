@@ -57,6 +57,10 @@ logs/
 # MixMyFit local uploads
 backend/uploads/
 
+# Docker Compose local overrides and bind-mounted data
+docker-compose.override.yml
+.docker-data/
+
 # OS temporary files
 .DS_Store
 Thumbs.db

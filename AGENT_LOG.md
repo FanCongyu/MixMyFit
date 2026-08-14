@@ -303,6 +303,21 @@
 - finishing-a-development-branch 判断：开 PR；Task 相关 E2E 和完整后端测试均通过，当前分支适合提交后创建 PR。Commit hash：9fb316ce5de972e806d36d8e6941554d10ec0e0c。
 - 人工干预和教训：用户启动 Docker 后继续验证；用户要求快速收尾评审并明确 README 只有必要时更新。教训是红灯必须区分业务失败、环境失败和命令入口失败；E2E task 中“可运行的文档化命令”本身也需要纳入验证。
 
+## 2026-08-14 16:50 +08:00
+
+- Task 编号和标题：T18 Docker Compose 分发。
+- 分支 / worktree：`task/18-docker-compose`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-18-docker-compose`; linked worktree。
+- 使用的 subagent：Codex。
+- TDD 红灯摘要：新增 `DockerDistributionTest` 后，首次有效红灯为 3 failures，原因是 `docker-compose.yml`、`backend/Dockerfile`、`frontend/Dockerfile` 缺失；后续评审发现 backend healthcheck 依赖未声明 `wget`，新增测试确认红灯，compose 仍包含 `wget` 且 Dockerfile 未提供 Java healthcheck。
+- TDD 绿灯摘要：新增 `docker-compose.yml`、后端/前端 Dockerfile；compose 定义 mysql/backend/frontend、`mysql-data` 和 `upload-data` volumes、环境变量配置和 healthcheck；backend Dockerfile 对必需数据库环境变量 fail fast；healthcheck 改为 Java runtime 自带能力，不依赖 `wget/curl/nc`。
+- 重构摘要：仅修改 Docker 分发配置、分发测试、README 必要分发说明和 `.gitignore`；未修改业务代码；未写入真实凭据。
+- 测试命令和结果：RED：`mvn test -Dtest=DockerDistributionTest` 先后确认 3 failures（缺失 Docker 文件）和 1 failure（healthcheck 使用 `wget`）。GREEN：`mvn test -Dtest=DockerDistributionTest` 通过，4 tests / 0 failures；`docker compose config --quiet` 通过；`mingw32-make test` 通过，后端 78 tests / 0 failures，前端 9 files / 32 tests passed。`docker compose up --build -d` 受 Docker Hub token endpoint 外部网络超时阻塞，未创建容器。
+- SPEC / PLAN 合规检查结论：通过；只完成 T18，满足 Docker Compose 分发、MySQL volume、上传 volume、环境变量配置、README 分发说明和安全边界；运行时启动验证受外部 Docker Hub 网络阻塞，不归因于仓库代码；未写入真实凭据。
+- 代码质量检查结论：通过；Critical issues 无。Non-critical：后续可添加 `.dockerignore`，并将字符串型 Docker 分发测试升级为解析 `docker compose config` 输出。
+- finishing-a-development-branch 判断：开 PR；Task 相关测试、完整项目测试和 compose 静态校验均通过，剩余 compose runtime 验证依赖 Docker Hub 可访问或预缓存基础镜像。
+- 人工干预和教训：用户要求先快速收尾评审，再修复评审问题，最后只改 `AGENT_LOG.md`、`PLAN.md` 和必要 README。教训是容器 healthcheck 不应依赖基础镜像中未声明的工具；评审 Docker task 时要区分仓库缺陷与外部 registry/network 阻塞。
+- Commit hash：49ef7e8a16b47223b0f30b0258043998cc8de66c。
+
 ## 2026-XX-XX HH:mm
 
 - Task 编号：
