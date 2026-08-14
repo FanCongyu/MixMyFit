@@ -6,7 +6,7 @@ MixMyFit 是一个个人衣橱搭配管理 Web 应用，面向希望数字化管
 
 用户可以上传自己的衣物图片，按品类、颜色、季节和标签管理衣物，并在搭配编辑器中组合、预览、保存和复用穿搭方案。项目目标是减少用户反复试穿或手工拼图的成本，让用户能基于自己的真实衣物图片完成搭配规划。
 
-本项目是 AI4SE 期末项目 B（非 harness 应用类项目）。当前已完成 SPEC、PLAN、冷启动验证、后端认证与个人资料 API、衣物与搭配核心 API、前端核心页面、核心 E2E，以及 Docker Compose 本地分发；尚未完成 CI 或线上部署。
+本项目是 AI4SE 期末项目 B（非 harness 应用类项目）。当前已完成 SPEC、PLAN、冷启动验证、后端认证与个人资料 API、衣物与搭配核心 API、前端核心页面、核心 E2E、Docker Compose 本地分发，以及 GitHub Actions CI；尚未完成线上部署。
 
 ## 目标用户
 
@@ -65,7 +65,7 @@ SPEC 阶段确定的 MVP 功能包括：
 - [x] 实现前端注册、登录、退出、个人资料、昵称修改和密码修改页面
 - [x] 实现核心功能
 - [x] 提供 Docker Compose 本地分发
-- [ ] 配置测试与 CI
+- [x] 配置测试与 CI
 - [ ] 完成部署与分发
 
 ## 项目文档
@@ -93,6 +93,7 @@ SPEC 阶段确定的 MVP 功能包括：
 ├── REFLECTION.md
 ├── Makefile
 ├── docker-compose.yml
+├── .github/workflows/ci.yml
 ├── e2e/
 │   ├── README.md
 │   └── run-backend-e2e.ps1
@@ -137,11 +138,11 @@ SPEC 阶段确定的 MVP 功能包括：
 └── src/
 ```
 
-后续实现阶段仍计划创建 `.gitlab-ci.yml` 等文件。
+CI 使用 GitHub Actions workflow `.github/workflows/ci.yml`。
 
 ## 安装与运行
 
-当前已有后端 API、前端页面、核心 E2E 和 Docker Compose 本地分发。CI 和线上部署仍未完成。
+当前已有后端 API、前端页面、核心 E2E、Docker Compose 本地分发和 GitHub Actions CI。线上部署仍未完成。
 
 ### Docker Compose 本地启动
 
@@ -220,10 +221,17 @@ make test-e2e
 Windows 环境如果没有 GNU Make，但安装了 MinGW Make，可运行：
 
 ```bash
+mingw32-make test
 mingw32-make test-e2e
 ```
 
-本地环境需要自行安装 Java 17+、Maven、Node.js、npm 和 make。后端 schema 测试和 E2E 测试使用 Testcontainers MySQL，因此运行完整后端测试或 E2E 时还需要 Docker daemon 可用。当前开发机 shell 中 `mvn` 和 `make` 不在 PATH；E2E 验证使用 `mingw32-make test-e2e`，并由 `e2e/run-backend-e2e.ps1` 自动查找本机 Maven 或 Maven wrapper 缓存。
+本地环境需要自行安装 Java 17+、Maven、Node.js、npm 和 make。后端 schema 测试和 E2E 测试使用 Testcontainers MySQL，因此运行完整后端测试或 E2E 时还需要 Docker daemon 可用。当前开发机 shell 中 `make` 不在 PATH；可用 `mingw32-make test` 或 `mingw32-make test-e2e`。Makefile 会优先使用本机 Maven wrapper 缓存中的 `mvn.cmd`，找不到时回退到 PATH 中的 `mvn`。
+
+GitHub Actions CI：
+
+- `.github/workflows/ci.yml` 包含 `unit-test` job。
+- `unit-test` 在 `ubuntu-latest` 上运行后端 Maven 测试、前端依赖安装、前端构建和前端 Vitest。
+- 后端测试依赖 Testcontainers MySQL，CI runner 需要 Docker daemon 可用；GitHub-hosted Ubuntu runner 默认提供 Docker。
 
 ## 测试
 
@@ -240,7 +248,7 @@ mingw32-make test-e2e
 
 T11 前端基线采用面向衣橱管理工具的 Open Design 方向：第一屏直接进入应用壳，不做营销式 landing page；整体以安静、实用、可扫描的工作台体验为目标。后续 UI 应延续克制的中性色底、清晰层级、稳定尺寸控件和受控图片容器，并通过 `object-fit`、固定展示区域和懒加载约束衣物图片展示。当前仅记录设计方向和基础结构，不表示最终业务 UI 已完成。
 
-后续任务会逐步加入 CI 测试。
+CI wiring 由后端仓库检查测试覆盖。
 
 ## 分发与部署
 
@@ -265,5 +273,5 @@ T3A 认证会话实现使用后端设置的 `MMF_SESSION` Cookie。Cookie 本地
 ## 已知限制
 
 - 当前 Compose 配置使用本地开发默认密码；生产环境必须改用部署平台 Secret 或受控环境变量。
-- CI、部署和线上 URL 尚未完成。
-- 当前开发机 shell 中 `mvn` 和 `make` 不在 PATH；需要配置本地工具链后才能直接运行 `cd backend && mvn test`、`make test` 和 `make test-e2e`。当前可用替代命令是 `mingw32-make test-e2e`。
+- 部署和线上 URL 尚未完成。
+- 当前开发机 shell 中 `make` 不在 PATH；需要配置 GNU Make 后才能直接运行 `make test` 和 `make test-e2e`。当前可用替代命令是 `mingw32-make test` 和 `mingw32-make test-e2e`。

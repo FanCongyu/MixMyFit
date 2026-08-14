@@ -318,6 +318,20 @@
 - 人工干预和教训：用户要求先快速收尾评审，再修复评审问题，最后只改 `AGENT_LOG.md`、`PLAN.md` 和必要 README。教训是容器 healthcheck 不应依赖基础镜像中未声明的工具；评审 Docker task 时要区分仓库缺陷与外部 registry/network 阻塞。
 - Commit hash：49ef7e8a16b47223b0f30b0258043998cc8de66c。
 
+## 2026-08-14 17:25 +08:00
+
+- Task 编号和标题：T19 GitHub Actions CI 与一键测试入口。
+- 分支 / worktree：`task/19-github-ci`; `D:\My Work\Homework\智能化软件工程师训练营\MixMyFit-task-19-github-ci`; linked worktree。
+- 使用的 subagent：Codex。
+- TDD 红灯摘要：新增 `CiWiringTest` 后，首次红灯为 `.github/workflows/ci.yml` 不存在；补充 Makefile wiring 断言后，红灯为缺少 `LOCAL_MVN` / `MVN ?=` fallback，且 `mingw32-make test` 因 `mvn` 不在 PATH 失败。
+- TDD 绿灯摘要：新增 GitHub Actions workflow `unit-test` job，配置 Java 17、Node 20、后端 Maven 测试、前端安装/构建/Vitest；Makefile 保持 `test` 一键入口并优先使用本机 Maven wrapper 缓存。
+- 重构摘要：未修改业务代码；仅补 CI 配置、仓库 wiring 测试、Makefile 本地入口兼容和 README 必要测试/CI/目录说明；未写入真实凭据。
+- 测试命令和结果：RED：`mvn test -Dtest=CiWiringTest` 先因 workflow 缺失失败，后因 Makefile fallback 缺失失败；GREEN：`mvn test -Dtest=CiWiringTest` 通过，2 tests / 0 failures；`mingw32-make test` 通过，后端 80 tests / 0 failures，前端 9 files / 32 tests passed；`make test` 在当前 PowerShell 中因 `make` 不在 PATH 无法直接执行；`git diff --check` 退出码 0，仅 CRLF/LF warning。
+- SPEC / PLAN 合规检查结论：通过；只完成 T19，按当前 GitHub 仓库将 CI 从 GitLab CI 口径改为 GitHub Actions，满足 `unit-test`、后端测试、前端构建/测试、本地一键入口和 README CI 预期；未改 API contract、数据模型或安全边界；未写入真实凭据。
+- 代码质量检查结论：通过；Critical issues 无。Non-critical：可后续增加 `workflow_dispatch`、Docker build check，并单独处理 `npm audit` 报告的现有依赖漏洞。
+- finishing-a-development-branch 判断：开 PR；Task 相关测试和完整本地等价测试入口均通过；Commit hash：待填写。
+- 人工干预和教训：用户明确当前仓库是 GitHub，要求把 Task 19 的 GitLab 口径替换成 GitHub，其余不动；用户还要求快速收尾评审后再做文档收尾。教训是评审 diff 时必须同时查看 staged 和 unstaged 变更，新文件可能已 staged；本地一键入口不能只看 Makefile 目标存在，还要在当前工具链条件下实际跑通。
+
 ## 2026-XX-XX HH:mm
 
 - Task 编号：
