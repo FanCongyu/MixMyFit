@@ -316,7 +316,7 @@
 - 代码质量检查结论：通过；Critical issues 无。Non-critical：后续可添加 `.dockerignore`，并将字符串型 Docker 分发测试升级为解析 `docker compose config` 输出。
 - finishing-a-development-branch 判断：开 PR；Task 相关测试、完整项目测试和 compose 静态校验均通过，剩余 compose runtime 验证依赖 Docker Hub 可访问或预缓存基础镜像。
 - 人工干预和教训：用户要求先快速收尾评审，再修复评审问题，最后只改 `AGENT_LOG.md`、`PLAN.md` 和必要 README。教训是容器 healthcheck 不应依赖基础镜像中未声明的工具；评审 Docker task 时要区分仓库缺陷与外部 registry/network 阻塞。
-- Commit hash：待填写。
+- Commit hash：49ef7e8a16b47223b0f30b0258043998cc8de66c。
 
 ## 2026-XX-XX HH:mm
 
