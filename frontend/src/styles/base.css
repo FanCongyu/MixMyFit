@@ -279,3 +279,156 @@ dd {
   color: #526070;
   margin: 0;
 }
+
+.outfit-editor {
+  display: grid;
+  gap: 24px;
+}
+
+.outfit-editor__header {
+  align-items: end;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.outfit-editor__header p {
+  color: #526070;
+  margin: 8px 0 0;
+}
+
+.outfit-slot-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.outfit-slot {
+  background: #ffffff;
+  border: 1px solid #d8dee6;
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.outfit-slot__header {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.outfit-slot__header h2 {
+  font-size: 1.125rem;
+  margin: 0;
+}
+
+.outfit-slot__preview {
+  align-items: center;
+  aspect-ratio: 4 / 5;
+  background: #e7eaee;
+  display: grid;
+  justify-items: center;
+  overflow: hidden;
+}
+
+.outfit-slot__preview p,
+.outfit-slot__body p {
+  color: #526070;
+  margin: 0;
+}
+
+.outfit-slot__image {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.outfit-slot__body {
+  display: grid;
+  gap: 4px;
+}
+
+.outfit-slot__actions {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.outfit-slot button,
+.outfit-candidates button {
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  min-height: 38px;
+  padding: 8px 10px;
+}
+
+.outfit-slot__actions button,
+.outfit-candidates button {
+  background: #175cd3;
+  color: #ffffff;
+}
+
+.outfit-slot__header button {
+  background: #e7eaee;
+  color: #1f2933;
+}
+
+.outfit-slot button:disabled {
+  background: #c8d0d9;
+  cursor: not-allowed;
+}
+
+.outfit-candidates {
+  background: #ffffff;
+  border: 1px solid #d8dee6;
+  border-radius: 8px;
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+}
+
+.outfit-candidates__header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.outfit-candidates__header h2 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.outfit-candidates__filters {
+  align-items: end;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.outfit-candidates__filters label {
+  display: grid;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.outfit-candidates__filters select {
+  border: 1px solid #c8d0d9;
+  border-radius: 6px;
+  color: #1f2933;
+  font: inherit;
+  min-height: 40px;
+  padding: 8px 10px;
+}
+
+.outfit-candidates__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
