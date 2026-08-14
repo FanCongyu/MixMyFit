@@ -25,6 +25,10 @@ const routes: AppRoute[] = [
     title: '搭配编辑器'
   },
   {
+    path: '/outfits',
+    title: '搭配方案'
+  },
+  {
     path: '/login',
     title: 'Log in'
   },
