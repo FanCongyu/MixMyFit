@@ -329,7 +329,7 @@
 - 测试命令和结果：RED：`mvn test -Dtest=CiWiringTest` 先因 workflow 缺失失败，后因 Makefile fallback 缺失失败；GREEN：`mvn test -Dtest=CiWiringTest` 通过，2 tests / 0 failures；`mingw32-make test` 通过，后端 80 tests / 0 failures，前端 9 files / 32 tests passed；`make test` 在当前 PowerShell 中因 `make` 不在 PATH 无法直接执行；`git diff --check` 退出码 0，仅 CRLF/LF warning。
 - SPEC / PLAN 合规检查结论：通过；只完成 T19，按当前 GitHub 仓库将 CI 从 GitLab CI 口径改为 GitHub Actions，满足 `unit-test`、后端测试、前端构建/测试、本地一键入口和 README CI 预期；未改 API contract、数据模型或安全边界；未写入真实凭据。
 - 代码质量检查结论：通过；Critical issues 无。Non-critical：可后续增加 `workflow_dispatch`、Docker build check，并单独处理 `npm audit` 报告的现有依赖漏洞。
-- finishing-a-development-branch 判断：开 PR；Task 相关测试和完整本地等价测试入口均通过；Commit hash：待填写。
+- finishing-a-development-branch 判断：开 PR；Task 相关测试和完整本地等价测试入口均通过；Commit hash：28187c6adba7172d1aeae8752d2f7b5bab161f31。
 - 人工干预和教训：用户明确当前仓库是 GitHub，要求把 Task 19 的 GitLab 口径替换成 GitHub，其余不动；用户还要求快速收尾评审后再做文档收尾。教训是评审 diff 时必须同时查看 staged 和 unstaged 变更，新文件可能已 staged；本地一键入口不能只看 Makefile 目标存在，还要在当前工具链条件下实际跑通。
 
 ## 2026-XX-XX HH:mm
