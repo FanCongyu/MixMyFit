@@ -273,7 +273,7 @@ Railway 服务配置要点：
 - Frontend root directory：`frontend`
 - Backend volume mount：`/app/uploads`
 - Backend 变量：`SPRING_DATASOURCE_URL`、`SPRING_DATASOURCE_USERNAME`、`SPRING_DATASOURCE_PASSWORD`、`UPLOAD_DIR=/app/uploads`、`MIXMYFIT_AUTH_COOKIE_SECURE=true`
-- Frontend 变量：`BACKEND_ORIGIN` 指向后端 Railway service private URL，`PORT=80`
+- Frontend 变量：`BACKEND_ORIGIN=http://${{backend.RAILWAY_PRIVATE_DOMAIN}}:8080`、`PORT=80`
 
 不要把 Railway Token、MySQL 密码或任何真实生产凭据写入仓库。数据库连接值应在 Railway Variables 中引用 Railway MySQL 提供的变量。
 
